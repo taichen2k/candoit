@@ -181,7 +181,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <ul class="tasks" id="onceList"></ul>
   </div>
 
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">11</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">12</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -217,7 +217,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
       <div class="card">
         <div class="item"><div class="lbl">매시 정각 알림<small id="pushState">꺼져 있어요</small></div>
           <button class="switch" id="pushSw" type="button" role="switch" aria-checked="false" aria-label="매시 정각 알림"></button></div>
-        <div class="panel" style="padding-top:0"><span class="status" id="pushMsg" hidden></span></div>
+        <div class="panel" id="pushMsgWrap" style="padding-top:0" hidden><span class="status" id="pushMsg"></span></div>
         <div class="panel" id="pushCodePanel" hidden>
           <p><b>마지막 한 단계예요.</b> 아래 알림 코드를 복사해서 깃허브 저장소 설정에 붙여넣으면 잠금화면 알림이 시작돼요. 붙여넣는 곳은 Claude에게 "알림 코드 등록해줘"라고 하면 대신 열어드려요.</p>
           <textarea class="codebox" id="pushCode" readonly aria-label="알림 코드"></textarea>
@@ -252,9 +252,8 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     </div>
 
     <div class="group">
-      <h3>루틴</h3>
+      <h3>기록 관리</h3>
       <div class="card">
-        <button class="item btn" type="button" id="addStarter"><span class="lbl">기본 루틴 4개 넣기<small>물 마시기 · 운동 · 독서 · 내일 할 일 정리</small></span><span class="arrow">›</span></button>
         <button class="item btn danger" type="button" id="resetAll"><span class="lbl">모든 기록 지우기<small>할 일과 달성 기록이 모두 사라져요</small></span><span class="arrow">›</span></button>
         <div class="panel" id="resetConfirm" hidden>
           <div class="confirm">
@@ -268,11 +267,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">11</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">12</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">11</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">12</span></footer>
   </div>
 </section>
 
@@ -288,7 +287,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='11';
+const VERSION='12';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -351,7 +350,7 @@ function fmtDate(d){return d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.get
 function drawList(ul,items,ds,kind){
   ul.innerHTML='';
   if(!items.length){const li=document.createElement('li');li.className='empty';
-    if(kind==='fixed'){li.innerHTML='<span>매일 반복할 루틴을 추가해 보세요.</span><button type="button">기본 루틴으로 시작</button>';li.querySelector('button').onclick=addStarter;}
+    if(kind==='fixed'){li.innerHTML='<span>매일 반복할 루틴은 아래 입력창에 적고 <b>매일 고정</b>을 켠 뒤 추가하세요.</span>';}
     else li.innerHTML='<span>오늘만 할 일은 여기에 쌓여요.</span>';
     ul.appendChild(li);return;}
   items.forEach(t=>{const li=document.createElement('li');const done=ds.has(t.id);li.className='task'+(done?' done':'');
@@ -370,7 +369,6 @@ function toggleDone(id){const ds=doneSet(today);ds.has(id)?ds.delete(id):ds.add(
 function removeTask(id){delete S.tasks[id];syncToday();save();}
 function togglePin(t){const n=Object.assign({},t,{fixed:!t.fixed});if(n.fixed){n.from=n.from||today;delete n.date;}else n.date=today;S.tasks[n.id]=n;syncToday();save();}
 function addTask(title,time,fixed){const t={id:uid(),title,time:time||'',fixed,createdAt:Date.now()};if(fixed)t.from=today;else t.date=today;S.tasks[t.id]=t;syncToday();save();}
-function addStarter(){[['물 한 잔 마시기','08:00'],['운동 30분',''],['책 10페이지 읽기',''],['내일 할 일 정리','22:00']].forEach(([ti,tm],i)=>{const id=uid();S.tasks[id]={id,title:ti,time:tm,fixed:true,from:today,createdAt:Date.now()+i};});syncToday();save();toast('기본 루틴 4개를 넣었어요');}
 $('newPin').onclick=()=>{newPinned=!newPinned;$('newPin').setAttribute('aria-pressed',newPinned)};
 function showTime(){const v=$('newTime').value;$('timeLbl').textContent=v?v+' 알림':'알림 시각';$('timeChip').classList.toggle('set',!!v);}
 $('newTime').addEventListener('input',showTime);$('newTime').addEventListener('change',showTime);
@@ -386,7 +384,6 @@ $('openSet').onclick=openSettings;$('closeSet').onclick=closeSettings;
 $('startH').onchange=()=>{S.settings.start=+$('startH').value;save();refreshPush();};
 $('endH').onchange=()=>{S.settings.end=+$('endH').value;save();refreshPush();};
 $('soundSw').onclick=()=>{S.settings.sound=!(S.settings.sound!==false);$('soundSw').setAttribute('aria-checked',S.settings.sound);save();if(S.settings.sound)unlockAudio();};
-$('addStarter').onclick=()=>{addStarter();closeSettings();};
 $('resetAll').onclick=()=>{$('resetConfirm').hidden=false;};
 $('resetNo').onclick=()=>{$('resetConfirm').hidden=true;};
 $('resetYes').onclick=()=>{S.tasks={};S.days={};save();$('resetConfirm').hidden=true;closeSettings();toast('모든 기록을 지웠어요');};
@@ -433,7 +430,7 @@ function pushSupport(){
   if(!('PushManager' in window)||!('Notification' in window))return '이 브라우저는 알림을 지원하지 않아요. 갤럭시는 크롬, 아이폰은 홈 화면 아이콘으로 열어주세요.';
   return '';
 }
-function pushMsg(t,warn){const m=$('pushMsg');m.textContent=t||'';m.hidden=!t;m.className='status '+(warn?'warn':'ok');}
+function pushMsg(t,warn){const m=$('pushMsg');m.textContent=t||'';$('pushMsgWrap').hidden=!t;m.className='status '+(warn?'warn':'ok');}
 async function refreshPush(){
   $('installGuide').hidden=!(isIOS&&!standalone);
   const why=pushSupport();

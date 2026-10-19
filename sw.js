@@ -1,5 +1,5 @@
 /* 할수있어 서비스워커: 홈 화면 설치 + 잠금화면 알림 */
-const CACHE='candoit-v11';
+const CACHE='candoit-v12';
 const SHELL=['./','./index.html','./manifest.webmanifest','./fonts/pretendard.woff2','./icon-192.png','./icon-512.png','./icon-180.png','./badge-96.png','./favicon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
