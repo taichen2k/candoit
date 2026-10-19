@@ -1,4 +1,4 @@
-// 매시 정각 알림 보내기 (GitHub Actions가 매시 35분에 실행, 실제로는 보통 20~40분 늦게 돎)
+// 매시 정각 알림 보내기 (cron-job.org가 매시 00분에 이 작업을 직접 실행시킴)
 // 비밀값: VAPID_PRIVATE_KEY(알림 서명 키), PUSH_CODES(폰에서 복사한 알림 코드, 기기마다 한 줄)
 const webpush = require('web-push');
 const PUBLIC = 'BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
@@ -10,7 +10,7 @@ webpush.setVapidDetails('mailto:noreply@candoit.app', PUBLIC, priv);
 
 // 한국 시간 기준, 곧 다가올 정각
 const force = process.env.FORCE === '1';
-// 깃허브 예약 실행은 보통 20~40분 늦게 돌기 때문에 매시 35분에 걸고, 가장 가까운 정각을 기준으로 삼는다
+// 정각 직전·직후 어느 쪽에 실행돼도 가장 가까운 정각을 기준으로 삼는다
 const kst = new Date(Date.now() + 9 * 3600e3 + 30 * 60e3);
 // 시험 발송(직접 실행)은 지금 시각 기준으로 표시
 const hour = force ? new Date(Date.now() + 9 * 3600e3).getUTCHours() : kst.getUTCHours();
