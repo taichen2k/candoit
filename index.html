@@ -1,0 +1,485 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#f4f6fa" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f131b" media="(prefers-color-scheme: dark)">
+<title>할수있어</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="할수있어">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<style>
+@font-face{font-family:"Pretendard";src:url(fonts/pretendard.woff2) format("woff2");font-weight:45 920;font-display:swap}
+/* 모바일 한 화면 플래너: 위 날짜·기록, 가운데 체크리스트, 아래 고정 입력바, 설정은 한 화면에 모음 */
+:root{
+  --bg:#f4f6fa; --surface:#ffffff; --ink:#111827; --muted:#7a8496; --line:#e3e7ee;
+  --accent:#3056e0; --accent-ink:#ffffff; --soft:#e9eefc; --good:#16a36a; --warn:#e5484d; --amber:#b45309;
+  --f:"Pretendard",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){:root{
+  --bg:#0f131b; --surface:#181e2a; --ink:#eef1f6; --muted:#8a93a5; --line:#262e3d;
+  --accent:#7f9bff; --accent-ink:#0f131b; --soft:#1f2840; --good:#3cc98a; --warn:#ff6b6f; --amber:#f5b54a; color-scheme:dark}}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--ink);margin:0}
+body{font-family:var(--f);font-size:16px;line-height:1.5;letter-spacing:-.01em;font-variant-numeric:tabular-nums;
+  padding:calc(16px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(132px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+button,input,select,textarea{font:inherit;color:inherit;letter-spacing:inherit}
+button{cursor:pointer;touch-action:manipulation}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+[hidden]{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+
+header{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.brand{display:flex;align-items:center;gap:10px}
+.brand img{width:36px;height:36px;border-radius:9px;display:block}
+.brand h1{margin:0;font-size:30px;font-weight:800;line-height:1.1;letter-spacing:-.04em}
+.d1{font-size:13px;color:var(--muted);margin-top:6px}
+.gear{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--muted);position:relative}
+.gear .badge{position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:var(--warn);border:2px solid var(--surface)}
+
+.rec{display:flex;flex-direction:column;gap:12px;background:var(--surface);border-radius:16px;padding:16px}
+.rec-top{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.rec-top b{font-size:15px;font-weight:700}
+.rec-top b em{font-style:normal;color:var(--accent);font-size:22px;font-weight:800;margin-right:1px}
+.rec-top span{font-size:13px;color:var(--muted);margin-left:auto}
+.goal{height:6px;border-radius:3px;background:var(--line);overflow:hidden}
+.goal i{display:block;height:100%;background:var(--accent);border-radius:3px;transition:width .4s}
+.week{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.dc{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:11px;color:var(--muted)}
+.dot{width:30px;height:30px;border-radius:50%;background:var(--bg);display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--muted)}
+.dot.part{background:var(--soft);color:var(--accent)}
+.dot.full{background:var(--accent);color:var(--accent-ink)}
+.dc.today span{color:var(--ink);font-weight:700}
+
+.nudge{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14px}
+.nudge span{flex:1}
+.nudge button{border:0;border-radius:10px;background:var(--soft);color:var(--accent);font-weight:700;padding:8px 12px;font-size:13px;white-space:nowrap}
+
+.list h2{font-size:14px;font-weight:700;margin:0 0 8px;display:flex;justify-content:space-between;color:var(--muted)}
+.list h2 span{font-weight:500}
+ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;background:var(--surface);border-radius:16px;overflow:hidden}
+.task{display:flex;align-items:center;gap:12px;padding:6px 4px 6px 14px;min-height:56px;min-width:0}
+.task+.task{border-top:1px solid var(--line)}
+.chk{flex:none;width:26px;height:26px;border-radius:50%;border:2px solid var(--line);background:transparent;display:grid;place-items:center;padding:0;position:relative}
+.chk::after{content:"";position:absolute;inset:-10px}
+.chk svg{opacity:0}
+.task.done .chk{background:var(--good);border-color:var(--good)}
+.task.done .chk svg{opacity:1}
+.tb{flex:1;min-width:0}
+.ttl{display:block;overflow-wrap:anywhere}
+.task.done .ttl{color:var(--muted);text-decoration:line-through}
+.meta{font-size:12px;color:var(--muted)}
+.more{flex:none;width:44px;height:44px;border:0;background:transparent;color:var(--muted);display:grid;place-items:center;border-radius:10px}
+.acts{display:flex;gap:6px;padding-right:8px}
+.acts button{border:0;border-radius:8px;padding:8px 10px;font-size:13px;font-weight:600;background:var(--bg)}
+.acts .del{background:var(--warn);color:#fff}
+.empty{padding:18px 16px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
+.empty button{border:0;border-radius:10px;background:var(--soft);color:var(--accent);font-weight:700;padding:10px 14px;font-size:14px}
+footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
+
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;background:var(--surface);border-top:1px solid var(--line);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.bar form{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:8px}
+.r1{display:flex;gap:8px}
+.r1 input{flex:1;min-width:0;border:0;border-radius:12px;background:var(--bg);padding:12px 14px;font-size:16px;outline:none}
+.r1 input:focus{box-shadow:0 0 0 2px var(--accent) inset}
+.add{flex:none;width:48px;border:0;border-radius:12px;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center}
+.r2{display:flex;gap:8px;align-items:center}
+.chip{display:flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;background:transparent;padding:6px 12px;font-size:13px;color:var(--muted);height:34px}
+.chip[aria-pressed="true"],.chip.set{background:var(--soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.chip.time{position:relative;cursor:pointer}
+.chip.time input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;cursor:pointer}
+
+/* 설정 화면 */
+.settings{position:fixed;inset:0;z-index:30;background:var(--bg);overflow-y:auto;
+  padding:calc(12px + env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) calc(32px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.settings .wrap{gap:22px}
+.s-head{display:flex;align-items:center;gap:8px;min-height:48px}
+.s-head h2{margin:0;font-size:22px;font-weight:800;flex:1}
+.back{border:0;background:transparent;width:44px;height:44px;margin-left:-10px;display:grid;place-items:center;border-radius:10px}
+.group h3{font-size:13px;font-weight:700;color:var(--muted);margin:0 0 8px 4px}
+.card{background:var(--surface);border-radius:16px;overflow:hidden}
+.item{display:flex;align-items:center;gap:12px;padding:14px 16px;min-height:56px}
+.item+.item{border-top:1px solid var(--line)}
+.item .lbl{flex:1;min-width:0}
+.item .lbl small{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.item select{border:0;border-radius:10px;background:var(--bg);padding:8px 10px;font-size:15px}
+.item.btn{width:100%;border:0;background:transparent;text-align:left;font-size:16px}
+.item.btn .arrow{color:var(--muted)}
+.item.danger .lbl{color:var(--warn)}
+.switch{width:52px;height:32px;border-radius:16px;border:0;background:var(--line);position:relative;padding:0;flex:none}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.switch[aria-checked="true"]{background:var(--accent)}
+.switch[aria-checked="true"]::after{transform:translateX(20px)}
+.panel{padding:4px 16px 16px;display:flex;flex-direction:column;gap:10px;font-size:14px}
+.panel p{margin:0;color:var(--muted)}
+.panel ol{margin:0;padding-left:20px;color:var(--muted);display:flex;flex-direction:column;gap:4px}
+.panel b{color:var(--ink)}
+.codebox{width:100%;min-height:84px;border:1px solid var(--line);border-radius:12px;background:var(--bg);padding:10px;font-size:12px;font-family:ui-monospace,Menlo,monospace;word-break:break-all;resize:none}
+.pill{border:0;border-radius:10px;background:var(--accent);color:var(--accent-ink);font-weight:700;padding:11px 14px;font-size:15px}
+.pill.ghost{background:var(--soft);color:var(--accent)}
+.pill.red{background:var(--warn);color:#fff}
+.row2{display:flex;gap:8px;flex-wrap:wrap}
+.row2 .pill{flex:1}
+.status{font-size:13px;font-weight:600}
+.status.ok{color:var(--good)}.status.warn{color:var(--amber)}
+.confirm{background:var(--soft);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;font-size:14px}
+
+/* 알림 팝업 (앱을 보고 있을 때) */
+.scrim{position:fixed;inset:0;z-index:40;background:rgba(10,14,22,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.pop{width:100%;max-width:420px;background:var(--surface);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px;max-height:85vh;overflow:auto}
+.pop .hour{font-size:34px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-.03em}
+.pop ul.tasks{background:var(--bg)}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(140px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:calc(100% - 32px);text-align:center}
+@media (prefers-reduced-motion:no-preference){.pop{animation:up .22s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.5}}}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="main">
+  <header>
+    <div>
+      <div class="brand"><img src="icon-192.png" alt=""><h1>할수있어</h1></div>
+      <div class="d1" id="d1"></div>
+    </div>
+    <button class="gear" id="openSet" type="button" aria-label="설정">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+      <span class="badge" id="gearBadge" hidden></span>
+    </button>
+  </header>
+
+  <div class="rec" aria-label="나의 기록">
+    <div class="rec-top">
+      <b><em id="streak">0</em>일 연속</b>
+      <b>작심삼일 <em id="jaksim">0</em>번</b>
+      <span id="goalTxt">목표 123번</span>
+    </div>
+    <div class="goal"><i id="goalBar" style="width:0%"></i></div>
+    <div class="week" id="week"></div>
+  </div>
+
+  <div class="nudge" id="backupNudge" hidden>
+    <span id="backupNudgeTxt">백업한 지 7일 지났어요</span>
+    <button type="button" id="nudgeBackup">지금 백업</button>
+  </div>
+
+  <div class="list">
+    <h2>매일 루틴 <span id="fixedCnt"></span></h2>
+    <ul class="tasks" id="fixedList"></ul>
+  </div>
+  <div class="list">
+    <h2>오늘 할 일 <span id="onceCnt"></span></h2>
+    <ul class="tasks" id="onceList"></ul>
+  </div>
+
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">6</span></footer>
+</div>
+
+<div class="bar" id="bar">
+  <form id="addForm" autocomplete="off">
+    <div class="r1">
+      <label class="sr" for="newTitle">할 일</label>
+      <input type="text" id="newTitle" placeholder="할 일 추가" maxlength="80" enterkeyhint="done">
+      <button class="add" type="submit" aria-label="추가"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+    <div class="r2">
+      <button type="button" class="chip" id="newPin" aria-pressed="false">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 3h6l-1 7 4 3v2H6v-2l4-3z"/></svg>매일 고정
+      </button>
+      <label class="chip time" id="timeChip" for="newTime">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+        <span id="timeLbl">알림 시각</span>
+        <input type="time" id="newTime" aria-label="알림 시각 (선택)">
+      </label>
+    </div>
+  </form>
+</div>
+
+<!-- 설정 -->
+<section class="settings" id="settings" hidden aria-labelledby="setTitle">
+  <div class="wrap">
+    <div class="s-head">
+      <button class="back" id="closeSet" type="button" aria-label="뒤로"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h2 id="setTitle">설정</h2>
+    </div>
+
+    <div class="group">
+      <h3>알림</h3>
+      <div class="card">
+        <div class="item"><div class="lbl">매시 정각 알림<small id="pushState">꺼져 있어요</small></div>
+          <button class="switch" id="pushSw" type="button" role="switch" aria-checked="false" aria-label="매시 정각 알림"></button></div>
+        <div class="item"><div class="lbl">알림 시간대</div>
+          <span style="display:flex;gap:6px;align-items:center"><label class="sr" for="startH">시작</label><select id="startH"></select>~<label class="sr" for="endH">끝</label><select id="endH"></select></span></div>
+        <div class="item"><div class="lbl">앱을 보고 있을 때 소리<small>시각을 정한 할 일도 이때 알려요</small></div>
+          <button class="switch" id="soundSw" type="button" role="switch" aria-checked="true" aria-label="앱을 보고 있을 때 소리"></button></div>
+        <div class="panel" id="pushCodePanel" hidden>
+          <p><b>마지막 한 단계예요.</b> 아래 알림 코드를 복사해서 깃허브 저장소 설정에 붙여넣으면 잠금화면 알림이 시작돼요. 붙여넣는 곳은 Claude에게 "알림 코드 등록해줘"라고 하면 대신 열어드려요.</p>
+          <textarea class="codebox" id="pushCode" readonly aria-label="알림 코드"></textarea>
+          <div class="row2"><button class="pill" type="button" id="copyCode">알림 코드 복사</button><button class="pill ghost" type="button" id="testNoti">이 폰에서 알림 시험</button></div>
+          <p>알림 시간대를 바꾸면 코드도 바뀌어요. 그때는 새 코드를 다시 붙여넣어 주세요.</p>
+        </div>
+        <div class="panel" id="installGuide" hidden>
+          <p><b>아이폰은 홈 화면에 설치해야 알림이 와요.</b></p>
+          <ol><li>사파리에서 이 페이지를 열고 아래쪽 공유 버튼(□↑)을 누르세요.</li><li><b>홈 화면에 추가</b>를 누르세요.</li><li>홈 화면의 할수있어 아이콘으로 다시 열고 알림을 켜세요.</li></ol>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>백업 · 복구</h3>
+      <div class="card">
+        <button class="item btn" type="button" id="doBackup"><span class="lbl">지금 백업하기<small id="lastBackup">아직 백업한 적이 없어요</small></span><span class="arrow">›</span></button>
+        <button class="item btn" type="button" id="doRestore"><span class="lbl">백업 파일로 복구하기<small>다른 폰에서 만든 백업도 돼요</small></span><span class="arrow">›</span></button>
+        <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+        <div class="panel" id="restoreConfirm" hidden>
+          <div class="confirm">
+            <span id="restoreInfo"></span>
+            <span>지금 이 폰의 기록은 백업 내용으로 바뀌어요. 바꿀까요?</span>
+            <div class="row2"><button class="pill red" type="button" id="restoreYes">바꾸기</button><button class="pill ghost" type="button" id="restoreNo">취소</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>루틴</h3>
+      <div class="card">
+        <button class="item btn" type="button" id="addStarter"><span class="lbl">기본 루틴 4개 넣기<small>물 마시기 · 운동 · 독서 · 내일 할 일 정리</small></span><span class="arrow">›</span></button>
+        <button class="item btn danger" type="button" id="resetAll"><span class="lbl">모든 기록 지우기<small>할 일과 달성 기록이 모두 사라져요</small></span><span class="arrow">›</span></button>
+        <div class="panel" id="resetConfirm" hidden>
+          <div class="confirm">
+            <span>정말 모두 지울까요? 백업해 두지 않았다면 되돌릴 수 없어요.</span>
+            <div class="row2"><button class="pill red" type="button" id="resetYes">모두 지우기</button><button class="pill ghost" type="button" id="resetNo">취소</button></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="group">
+      <h3>앱 정보</h3>
+      <div class="card">
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">6</span></span></div>
+        <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
+      </div>
+    </div>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">6</span></footer>
+  </div>
+</section>
+
+<div class="scrim" id="pop" hidden>
+  <div class="pop" role="dialog" aria-modal="true" aria-labelledby="popTitle">
+    <div class="hour" id="popHour"></div>
+    <p id="popTitle" style="margin:0;font-weight:700"></p>
+    <ul class="tasks" id="popList"></ul>
+    <button class="pill" id="popClose" type="button">확인</button>
+  </div>
+</div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(function(){
+const VERSION='6';
+const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const keyOf=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const WD=['일','월','화','수','목','금','토'];
+const uid=()=>{try{return crypto.randomUUID().replace(/-/g,'').slice(0,16)}catch(e){return Date.now().toString(36)+Math.random().toString(36).slice(2,8)}};
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const CHECK='<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const DOTS='<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>';
+let toastT;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(toastT);toastT=setTimeout(()=>t.hidden=true,2400);}
+
+function lunar(d){try{const p=new Intl.DateTimeFormat('ko-KR-u-ca-dangi',{month:'numeric',day:'numeric'}).formatToParts(d);
+  const m=(p.find(x=>x.type==='month')||{}).value,dd=(p.find(x=>x.type==='day')||{}).value;return m&&dd?'음력 '+m+'월 '+dd+'일':'';}catch(e){return ''}}
+
+/* ---------- 저장: 이 기기(localStorage) + 알림용 사본(IndexedDB) ---------- */
+const LS='candoit.v1';
+const S={tasks:{},days:{},settings:{start:8,end:22,sound:true,push:false},lastBackup:0};
+function load(){try{const j=JSON.parse(localStorage.getItem(LS)||'null');if(j){S.tasks=j.tasks||{};S.days=j.days||{};Object.assign(S.settings,j.settings||{});S.lastBackup=j.lastBackup||0;}}catch(e){}}
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('candoit',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
+async function mirror(){try{const db=await idb();const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put({tasks:S.tasks,days:S.days,settings:S.settings},'state');}catch(e){}}
+function save(){try{localStorage.setItem(LS,JSON.stringify({tasks:S.tasks,days:S.days,settings:S.settings,lastBackup:S.lastBackup}))}catch(e){toast('저장 공간이 부족해서 저장하지 못했어요');}mirror();render();}
+
+let today=keyOf(new Date());
+let openId=null,newPinned=false;
+
+/* ---------- 계산 ---------- */
+function tasksFor(k){return Object.values(S.tasks).filter(t=>t.fixed?(!t.from||t.from<=k):t.date===k)
+  .sort((a,b)=>{const x=a.time||'99',y=b.time||'99';return x<y?-1:x>y?1:(a.createdAt||0)-(b.createdAt||0)});}
+const doneSet=k=>new Set((S.days[k]&&S.days[k].done)||[]);
+const achieved=k=>{const d=S.days[k];return !!(d&&d.total>0&&d.doneCount>=d.total)};
+function dayOffset(n){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+n);return d;}
+function streak(){let n=0,i=achieved(today)?0:-1;while(achieved(keyOf(dayOffset(i)))&&n<3000){n++;i--;}return n;}
+function syncToday(){const l=tasksFor(today),ds=doneSet(today);const done=l.filter(t=>ds.has(t.id)).map(t=>t.id);S.days[today]={done,total:l.length,doneCount:done.length};}
+
+/* ---------- 그리기 ---------- */
+function render(){
+  const now=new Date(),lu=lunar(now);
+  $('d1').textContent=(now.getMonth()+1)+'월 '+now.getDate()+'일 ('+WD[now.getDay()]+')'+(lu?' · '+lu:'');
+  const list=tasksFor(today),ds=doneSet(today);
+  const fixed=list.filter(t=>t.fixed),once=list.filter(t=>!t.fixed);
+  drawList($('fixedList'),fixed,ds,'fixed');drawList($('onceList'),once,ds,'once');
+  $('fixedCnt').textContent=fixed.length?fixed.filter(t=>ds.has(t.id)).length+' / '+fixed.length:'';
+  $('onceCnt').textContent=once.length?once.filter(t=>ds.has(t.id)).length+' / '+once.length:'';
+  const ta=Object.keys(S.days).filter(achieved).length,j=Math.floor(ta/3),left=3-(ta%3);
+  $('streak').textContent=streak();$('jaksim').textContent=j;
+  $('goalTxt').textContent='다음까지 '+left+'일 · 목표 123번';
+  $('goalBar').style.width=Math.min(j/123*100,100)+'%';
+  const wk=$('week');wk.innerHTML='';
+  for(let i=-6;i<=0;i++){const d=dayOffset(i),k=keyOf(d),r=S.days[k];const c=document.createElement('div');c.className='dc'+(i===0?' today':'');
+    c.innerHTML='<div class="dot '+(achieved(k)?'full':(r&&r.doneCount>0?'part':''))+'">'+d.getDate()+'</div><span>'+(i===0?'오늘':WD[d.getDay()])+'</span>';wk.appendChild(c);}
+  // 백업 안내
+  const hasData=Object.keys(S.tasks).length>0;
+  const days=S.lastBackup?Math.floor((Date.now()-S.lastBackup)/864e5):null;
+  const need=hasData&&(days===null?Object.keys(S.days).length>=3:days>=7);
+  $('backupNudge').hidden=!need;$('gearBadge').hidden=!need;
+  $('backupNudgeTxt').textContent=days===null?'아직 백업한 적이 없어요':'백업한 지 '+days+'일 지났어요';
+  $('lastBackup').textContent=S.lastBackup?'마지막 백업 '+fmtDate(new Date(S.lastBackup)):'아직 백업한 적이 없어요';
+}
+function fmtDate(d){return d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());}
+function drawList(ul,items,ds,kind){
+  ul.innerHTML='';
+  if(!items.length){const li=document.createElement('li');li.className='empty';
+    if(kind==='fixed'){li.innerHTML='<span>매일 반복할 루틴을 추가해 보세요.</span><button type="button">기본 루틴으로 시작</button>';li.querySelector('button').onclick=addStarter;}
+    else li.innerHTML='<span>오늘만 할 일은 여기에 쌓여요.</span>';
+    ul.appendChild(li);return;}
+  items.forEach(t=>{const li=document.createElement('li');const done=ds.has(t.id);li.className='task'+(done?' done':'');
+    li.innerHTML='<button class="chk" type="button" aria-label="'+(done?'완료 취소':'완료')+': '+esc(t.title)+'">'+CHECK+'</button><div class="tb"><span class="ttl">'+esc(t.title)+'</span>'+(t.time?'<span class="meta">'+t.time+'</span>':'')+'</div>';
+    li.querySelector('.chk').onclick=()=>toggleDone(t.id);
+    if(openId===t.id){const a=document.createElement('div');a.className='acts';
+      a.innerHTML='<button type="button" class="pin">'+(t.fixed?'고정 해제':'매일 고정')+'</button><button type="button" class="del">삭제</button>';
+      a.querySelector('.pin').onclick=()=>{openId=null;togglePin(t)};a.querySelector('.del').onclick=()=>{openId=null;removeTask(t.id)};li.appendChild(a);}
+    else{const m=document.createElement('button');m.type='button';m.className='more';m.setAttribute('aria-label','더보기: '+t.title);m.innerHTML=DOTS;m.onclick=()=>{openId=t.id;render()};li.appendChild(m);}
+    ul.appendChild(li);});
+}
+document.addEventListener('click',e=>{if(openId&&!e.target.closest('.acts')&&!e.target.closest('.more')){openId=null;render();}});
+
+/* ---------- 할 일 ---------- */
+function toggleDone(id){const ds=doneSet(today);ds.has(id)?ds.delete(id):ds.add(id);S.days[today]=Object.assign({},S.days[today],{done:[...ds]});syncToday();save();}
+function removeTask(id){delete S.tasks[id];syncToday();save();}
+function togglePin(t){const n=Object.assign({},t,{fixed:!t.fixed});if(n.fixed){n.from=n.from||today;delete n.date;}else n.date=today;S.tasks[n.id]=n;syncToday();save();}
+function addTask(title,time,fixed){const t={id:uid(),title,time:time||'',fixed,createdAt:Date.now()};if(fixed)t.from=today;else t.date=today;S.tasks[t.id]=t;syncToday();save();}
+function addStarter(){[['물 한 잔 마시기','08:00'],['운동 30분',''],['책 10페이지 읽기',''],['내일 할 일 정리','22:00']].forEach(([ti,tm],i)=>{const id=uid();S.tasks[id]={id,title:ti,time:tm,fixed:true,from:today,createdAt:Date.now()+i};});syncToday();save();toast('기본 루틴 4개를 넣었어요');}
+$('newPin').onclick=()=>{newPinned=!newPinned;$('newPin').setAttribute('aria-pressed',newPinned)};
+function showTime(){const v=$('newTime').value;$('timeLbl').textContent=v?v+' 알림':'알림 시각';$('timeChip').classList.toggle('set',!!v);}
+$('newTime').addEventListener('input',showTime);$('newTime').addEventListener('change',showTime);
+$('addForm').addEventListener('submit',e=>{e.preventDefault();const v=$('newTitle').value.trim();if(!v){$('newTitle').focus();return;}
+  addTask(v,$('newTime').value,newPinned);$('newTitle').value='';$('newTime').value='';showTime();});
+
+/* ---------- 설정 화면 ---------- */
+for(let h=0;h<=23;h++)['startH','endH'].forEach(id=>{const o=document.createElement('option');o.value=h;o.textContent=pad(h)+'시';$(id).appendChild(o);});
+function openSettings(){$('startH').value=S.settings.start;$('endH').value=S.settings.end;$('soundSw').setAttribute('aria-checked',S.settings.sound!==false);
+  $('settings').hidden=false;$('bar').hidden=true;$('main').setAttribute('aria-hidden','true');refreshPush();window.scrollTo(0,0);}
+function closeSettings(){$('settings').hidden=true;$('bar').hidden=false;$('main').removeAttribute('aria-hidden');$('restoreConfirm').hidden=true;$('resetConfirm').hidden=true;}
+$('openSet').onclick=openSettings;$('closeSet').onclick=closeSettings;
+$('startH').onchange=()=>{S.settings.start=+$('startH').value;save();refreshPush();};
+$('endH').onchange=()=>{S.settings.end=+$('endH').value;save();refreshPush();};
+$('soundSw').onclick=()=>{S.settings.sound=!(S.settings.sound!==false);$('soundSw').setAttribute('aria-checked',S.settings.sound);save();if(S.settings.sound)unlockAudio();};
+$('addStarter').onclick=()=>{addStarter();closeSettings();};
+$('resetAll').onclick=()=>{$('resetConfirm').hidden=false;};
+$('resetNo').onclick=()=>{$('resetConfirm').hidden=true;};
+$('resetYes').onclick=()=>{S.tasks={};S.days={};save();$('resetConfirm').hidden=true;closeSettings();toast('모든 기록을 지웠어요');};
+
+/* ---------- 백업 · 복구 ---------- */
+function stamp(d){return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds());}
+async function backup(){
+  const now=new Date();const name='할수있어_'+stamp(now)+'.json';
+  const data=JSON.stringify({app:'할수있어',version:VERSION,savedAt:now.toISOString(),tasks:S.tasks,days:S.days,settings:S.settings},null,1);
+  const file=new File([data],name,{type:'application/json'});
+  let ok=false;
+  try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});ok=true;}}
+  catch(e){if(e&&e.name==='AbortError')return;}
+  if(!ok){const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
+  S.lastBackup=now.getTime();save();toast(name+' 저장했어요');
+}
+$('doBackup').onclick=backup;$('nudgeBackup').onclick=backup;
+let pending=null;
+$('doRestore').onclick=()=>{$('restoreFile').value='';$('restoreFile').click();};
+$('restoreFile').onchange=async()=>{
+  const f=$('restoreFile').files[0];if(!f)return;
+  try{const j=JSON.parse(await f.text());if(!j||typeof j.tasks!=='object'||typeof j.days!=='object')throw 0;
+    pending=j;const n=Object.keys(j.tasks).length,dn=Object.keys(j.days).length;
+    $('restoreInfo').innerHTML='<b>'+esc(f.name)+'</b><br>할 일 '+n+'개 · 기록 '+dn+'일치'+(j.savedAt?' · '+fmtDate(new Date(j.savedAt))+' 백업':'');
+    $('restoreConfirm').hidden=false;}
+  catch(e){toast('할수있어 백업 파일이 아니에요. 파일을 다시 골라주세요.');}
+};
+$('restoreNo').onclick=()=>{pending=null;$('restoreConfirm').hidden=true;};
+$('restoreYes').onclick=()=>{if(!pending)return;S.tasks=pending.tasks;S.days=pending.days;Object.assign(S.settings,pending.settings||{},{push:S.settings.push});
+  pending=null;$('restoreConfirm').hidden=true;syncToday();save();closeSettings();toast('백업에서 복구했어요');};
+
+/* ---------- 잠금화면 알림 (웹 푸시) ---------- */
+const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+let swReg=null;
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>{swReg=r;refreshPush();}).catch(()=>{});}
+function b64u(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
+function keyBytes(s){const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0));}
+function codeOf(sub){const j=sub.toJSON();return b64u(new TextEncoder().encode(JSON.stringify({e:j.endpoint,k:j.keys,a:S.settings.start,b:S.settings.end})));}
+async function refreshPush(){
+  const supported='serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
+  $('installGuide').hidden=!(isIOS&&!standalone);
+  if(!supported){$('pushState').textContent=isIOS&&!standalone?'홈 화면에 설치하면 켤 수 있어요':'이 브라우저는 알림을 지원하지 않아요';$('pushSw').disabled=true;return;}
+  const sub=swReg&&await swReg.pushManager.getSubscription().catch(()=>null);
+  const on=!!sub&&Notification.permission==='granted';
+  $('pushSw').setAttribute('aria-checked',on);
+  $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요. 폰 설정에서 허용해 주세요':'꺼져 있어요');
+  $('pushCodePanel').hidden=!on;if(on)$('pushCode').value=codeOf(sub);
+  S.settings.push=on;mirror();
+}
+$('pushSw').onclick=async()=>{
+  if(!swReg){toast('잠시 후 다시 눌러주세요');return;}
+  const sub=await swReg.pushManager.getSubscription().catch(()=>null);
+  if(sub){await sub.unsubscribe().catch(()=>{});toast('알림을 껐어요');refreshPush();return;}
+  const perm=await Notification.requestPermission();
+  if(perm!=='granted'){toast('알림 허용이 필요해요');refreshPush();return;}
+  try{await swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});toast('알림을 켰어요. 알림 코드를 복사해 주세요');}
+  catch(e){toast('알림을 켜지 못했어요. 다시 시도해 주세요');}
+  refreshPush();
+};
+$('copyCode').onclick=async()=>{const t=$('pushCode').value;try{await navigator.clipboard.writeText(t);toast('알림 코드를 복사했어요');}catch(e){$('pushCode').select();toast('코드를 길게 눌러 복사해 주세요');}};
+$('testNoti').onclick=async()=>{if(swReg&&Notification.permission==='granted'){await mirror();swReg.active&&swReg.active.postMessage({type:'test'});toast('알림을 보냈어요');}};
+
+/* ---------- 앱을 보고 있을 때 알림 ---------- */
+let actx=null,titleTimer=null;const fired=new Set();const baseTitle=document.title;
+function unlockAudio(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume();}catch(e){}}
+document.addEventListener('pointerdown',unlockAudio,{once:true});
+function chime(){if(!actx||S.settings.sound===false)return;const t=actx.currentTime;
+  [[880,0],[1175,.18],[1568,.36]].forEach(([f,dt])=>{const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=f;
+    g.gain.setValueAtTime(0,t+dt);g.gain.linearRampToValueAtTime(.25,t+dt+.02);g.gain.exponentialRampToValueAtTime(.001,t+dt+.6);o.connect(g).connect(actx.destination);o.start(t+dt);o.stop(t+dt+.65);});
+  try{navigator.vibrate&&navigator.vibrate([200,100,200])}catch(e){}}
+const remaining=()=>{const ds=doneSet(today);return tasksFor(today).filter(t=>!ds.has(t.id));};
+function fire(head,msg,items){
+  chime();$('popHour').textContent=head;$('popTitle').textContent=msg;const pl=$('popList');pl.innerHTML='';pl.hidden=!items.length;
+  items.slice(0,6).forEach(t=>{const li=document.createElement('li');li.className='task';
+    li.innerHTML='<button class="chk" type="button" aria-label="완료: '+esc(t.title)+'">'+CHECK+'</button><div class="tb"><span class="ttl">'+esc(t.title)+'</span></div>';
+    li.querySelector('.chk').onclick=()=>{toggleDone(t.id);li.classList.toggle('done')};pl.appendChild(li);});
+  $('pop').hidden=false;let on=false;clearInterval(titleTimer);titleTimer=setInterval(()=>{document.title=(on=!on)?'⏰ '+head:baseTitle},900);}
+$('popClose').onclick=()=>{$('pop').hidden=true;clearInterval(titleTimer);document.title=baseTitle;};
+function tick(){
+  const now=new Date(),k=keyOf(now);if(k!==today){today=k;syncToday();save();}
+  if(document.visibilityState!=='visible')return;
+  const h=now.getHours(),m=now.getMinutes(),hm=pad(h)+':'+pad(m),rem=remaining();
+  rem.filter(t=>t.time===hm).forEach(t=>{const key=k+t.id+hm;if(!fired.has(key)){fired.add(key);fire(hm,t.title+' 할 시간이에요',[t]);}});
+  // 잠금화면 알림이 켜져 있으면 정각 알림은 폰 알림이 대신함
+  if(!S.settings.push&&m===0&&h>=S.settings.start&&h<=S.settings.end){const key=k+'H'+h;
+    if(!fired.has(key)){fired.add(key);rem.length?fire(pad(h)+':00','남은 할 일 '+rem.length+'개',rem):fire(pad(h)+':00','오늘 할 일 모두 끝! 잘했어요',[]);}}
+}
+setInterval(tick,15000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){load();render();}});
+
+load();syncToday();save();
+if(location.hash==='#settings')openSettings();
+})();
+</script>
+</body>
+</html>

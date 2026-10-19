@@ -1,0 +1,25 @@
+name: 매시 정각 알림
+on:
+  schedule:
+    - cron: '57 * * * *'   # 매시 57분(한국 시간 기준 정각 직전)에 실행
+  workflow_dispatch:
+    inputs:
+      force:
+        description: '시간대와 상관없이 지금 바로 보내기 (시험용)'
+        type: boolean
+        default: true
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm install --no-save --no-audit --no-fund web-push@3.6.7
+      - run: node push/send.js
+        env:
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          PUSH_CODES: ${{ secrets.PUSH_CODES }}
+          FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '1' || '0' }}
