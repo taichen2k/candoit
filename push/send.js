@@ -12,7 +12,8 @@ webpush.setVapidDetails('mailto:noreply@candoit.app', PUBLIC, priv);
 const force = process.env.FORCE === '1';
 // 깃허브 예약 실행은 보통 20~40분 늦게 돌기 때문에 매시 35분에 걸고, 가장 가까운 정각을 기준으로 삼는다
 const kst = new Date(Date.now() + 9 * 3600e3 + 30 * 60e3);
-const hour = kst.getUTCHours();
+// 시험 발송(직접 실행)은 지금 시각 기준으로 표시
+const hour = force ? new Date(Date.now() + 9 * 3600e3).getUTCHours() : kst.getUTCHours();
 
 (async () => {
   let sent = 0;
