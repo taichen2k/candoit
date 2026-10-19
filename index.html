@@ -82,6 +82,14 @@ ul.tasks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;b
 .acts{display:flex;gap:6px;padding-right:8px}
 .acts button{border:0;border-radius:8px;padding:8px 10px;font-size:13px;font-weight:600;background:var(--bg)}
 .acts .del{background:var(--warn);color:#fff}
+.task.editing{display:block;padding:12px 14px;background:var(--soft)}
+.edit{display:flex;flex-direction:column;gap:10px}
+.edit input[type=text]{width:100%;border:0;border-radius:10px;background:var(--surface);padding:11px 12px;font-size:16px;outline:none}
+.edit input[type=text]:focus{box-shadow:0 0 0 2px var(--accent) inset}
+.erow{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.erow.end{justify-content:flex-end}
+.erow .chip{background:var(--surface)}
+.erow .pill{padding:9px 16px;font-size:14px}
 .empty{padding:18px 16px;color:var(--muted);font-size:14px;display:flex;flex-direction:column;gap:10px;align-items:flex-start}
 .empty button{border:0;border-radius:10px;background:var(--soft);color:var(--accent);font-weight:700;padding:10px 14px;font-size:14px}
 footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
@@ -184,7 +192,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <ul class="tasks" id="onceList"></ul>
   </div>
 
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">13</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">14</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -273,11 +281,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">13</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">14</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">13</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">14</span></footer>
   </div>
 </section>
 
@@ -293,7 +301,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='13';
+const VERSION='14';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -317,7 +325,7 @@ async function mirror(){try{const db=await idb();const tx=db.transaction('kv','r
 function save(){try{localStorage.setItem(LS,JSON.stringify({tasks:S.tasks,days:S.days,settings:S.settings,lastBackup:S.lastBackup}))}catch(e){toast('저장 공간이 부족해서 저장하지 못했어요');}mirror();render();}
 
 let today=keyOf(new Date());
-let openId=null,newPinned=false;
+let openId=null,editId=null,newPinned=false;
 
 /* ---------- 계산 ---------- */
 function tasksFor(k){return Object.values(S.tasks).filter(t=>t.fixed?(!t.from||t.from<=k):t.date===k)
@@ -361,12 +369,37 @@ function drawList(ul,items,ds,kind){
     ul.appendChild(li);return;}
   items.forEach(t=>{const li=document.createElement('li');const done=ds.has(t.id);li.className='task'+(done?' done':'');
     li.innerHTML='<button class="chk" type="button" aria-label="'+(done?'완료 취소':'완료')+': '+esc(t.title)+'">'+CHECK+'</button><div class="tb"><span class="ttl">'+esc(t.title)+'</span>'+(t.time?'<span class="meta">'+t.time+'</span>':'')+'</div>';
+    if(editId===t.id){ul.appendChild(editRow(t));return;}
     li.querySelector('.chk').onclick=()=>toggleDone(t.id);
     if(openId===t.id){const a=document.createElement('div');a.className='acts';
-      a.innerHTML='<button type="button" class="pin">'+(t.fixed?'고정 해제':'매일 고정')+'</button><button type="button" class="del">삭제</button>';
-      a.querySelector('.pin').onclick=()=>{openId=null;togglePin(t)};a.querySelector('.del').onclick=()=>{openId=null;removeTask(t.id)};li.appendChild(a);}
+      a.innerHTML='<button type="button" class="edt">수정</button><button type="button" class="del">삭제</button>';
+      a.querySelector('.edt').onclick=()=>{openId=null;editId=t.id;render();const i=document.getElementById('editTitle');if(i){i.focus();i.setSelectionRange(i.value.length,i.value.length);}};
+      a.querySelector('.del').onclick=()=>{openId=null;removeTask(t.id)};li.appendChild(a);}
     else{const m=document.createElement('button');m.type='button';m.className='more';m.setAttribute('aria-label','더보기: '+t.title);m.innerHTML=DOTS;m.onclick=()=>{openId=t.id;render()};li.appendChild(m);}
     ul.appendChild(li);});
+}
+function editRow(t){
+  const li=document.createElement('li');li.className='task editing';
+  let pinned=!!t.fixed;
+  li.innerHTML='<form class="edit" autocomplete="off"><label class="sr" for="editTitle">할 일 이름</label>'+
+    '<input type="text" id="editTitle" maxlength="80" enterkeyhint="done" value="'+esc(t.title)+'">'+
+    '<div class="erow"><label class="chip time'+(t.time?' set':'')+'" for="editTime"><span class="tl">'+(t.time?t.time+' 알림':'알림 시각')+'</span><input type="time" id="editTime" value="'+(t.time||'')+'"></label>'+
+    (t.time?'<button type="button" class="chip clr">시각 지우기</button>':'')+
+    '<button type="button" class="chip pin" aria-pressed="'+pinned+'">매일 고정</button></div>'+
+    '<div class="erow end"><button type="button" class="pill ghost cancel">취소</button><button type="submit" class="pill">저장</button></div></form>';
+  const f=li.querySelector('form'),ti=li.querySelector('#editTime'),tl=li.querySelector('.tl'),tc=li.querySelector('.chip.time');
+  const showT=()=>{tl.textContent=ti.value?ti.value+' 알림':'알림 시각';tc.classList.toggle('set',!!ti.value);};
+  ti.addEventListener('input',showT);ti.addEventListener('change',showT);
+  const clr=li.querySelector('.clr');if(clr)clr.onclick=()=>{ti.value='';showT();clr.remove();};
+  const pb=li.querySelector('.pin');pb.onclick=()=>{pinned=!pinned;pb.setAttribute('aria-pressed',pinned);};
+  li.querySelector('.cancel').onclick=()=>{editId=null;render();};
+  f.addEventListener('submit',e=>{e.preventDefault();
+    const title=li.querySelector('#editTitle').value.trim();if(!title){li.querySelector('#editTitle').focus();return;}
+    const n=Object.assign({},t,{title,time:ti.value||''});
+    if(pinned&&!t.fixed){n.fixed=true;n.from=today;delete n.date;}
+    else if(!pinned&&t.fixed){n.fixed=false;n.date=today;}
+    S.tasks[n.id]=n;editId=null;syncToday();save();toast('수정했어요');});
+  return li;
 }
 document.addEventListener('click',e=>{if(openId&&!e.target.closest('.acts')&&!e.target.closest('.more')){openId=null;render();}});
 
