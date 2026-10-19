@@ -7,7 +7,7 @@ on:
       force:
         description: '시간대와 상관없이 지금 바로 보내기 (시험용)'
         type: boolean
-        default: true
+        default: false
 jobs:
   send:
     runs-on: ubuntu-latest
