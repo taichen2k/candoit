@@ -291,7 +291,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">25</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">26</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -450,11 +450,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">25</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">26</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">25</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">26</span></footer>
   </div>
 </section>
 
@@ -893,12 +893,19 @@ let instEvt=window.__bip||null;
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 window.addEventListener('bip-ready',()=>{instEvt=window.__bip;drawInstall();});
 window.addEventListener('appinstalled',()=>{instEvt=null;toast('할수있어를 설치했어요');drawInstall();});
+let instHave=false;
+async function checkInstalled(){try{if(navigator.getInstalledRelatedApps){const l=await navigator.getInstalledRelatedApps();instHave=l&&l.length>0;}}catch(e){}drawInstall();}
+checkInstalled();
 function drawInstall(){
   const done=isStandalone();
-  $('instBtn').hidden=done;$('instBtn').textContent=instEvt?'설치':'방법 보기';if(!done&&!instEvt&&$('instGuide').hidden)showInstGuide(false);if(done||instEvt)$('instGuide').hidden=true;$('instTxt').textContent=done?'앱으로 설치되어 실행 중이에요':(instEvt?'버튼을 누르면 바로 설치돼요':'홈 화면이나 PC에 앱처럼 설치해요');
+  $('instBtn').hidden=done;$('instBtn').textContent=instHave&&!instEvt?'설치됨':'설치';
+  if(done||instEvt)$('instGuide').hidden=true;
+  $('instTxt').textContent=done?'앱으로 설치되어 실행 중이에요':instEvt?'버튼을 누르면 바로 설치돼요':instHave?'이 기기에 이미 설치돼 있어요. 바탕화면이나 시작 메뉴의 할수있어 아이콘으로 여세요':'폰 홈 화면이나 PC 바탕화면에 앱처럼 설치해요';
 }
 $('instBtn').onclick=async()=>{
-  if(instEvt){instEvt.prompt();const r=await instEvt.userChoice.catch(()=>null);instEvt=null;window.__bip=null;if(r&&r.outcome==='accepted')toast('설치를 시작했어요');drawInstall();return;}
+  const b=$('instBtn');
+  if(!instEvt&&!instHave&&!/Claude\/|Electron/.test(navigator.userAgent)&&!isIOS){b.disabled=true;b.textContent='준비 중…';for(let i=0;i<15&&!instEvt;i++)await new Promise(r=>setTimeout(r,200));b.disabled=false;drawInstall();}
+  if(instEvt){const e=instEvt;instEvt=null;window.__bip=null;try{await e.prompt();const r=await e.userChoice;if(r&&r.outcome==='accepted'){toast('설치를 시작했어요');instHave=true;}else toast('설치를 취소했어요');}catch(err){toast('설치 창을 열지 못했어요. 새로고침 후 다시 눌러주세요');}drawInstall();return;}
   showInstGuide(true);
 };
 function showInstGuide(scroll){
@@ -907,8 +914,8 @@ function showInstGuide(scroll){
   else if(isIOS)h='<p><b>아이폰·아이패드</b>: 사파리 아래쪽 공유 버튼(□↑) → <b>홈 화면에 추가</b>를 누르세요. 아이폰은 이렇게 설치해야 알림도 와요.</p>';
   else if(/SamsungBrowser/.test(ua))h='<p><b>삼성 인터넷</b>: 아래쪽 메뉴(≡) → <b>현재 페이지 추가</b> → <b>홈 화면</b>을 누르세요.</p>';
   else if(/Android/.test(ua))h='<p><b>크롬</b>: 오른쪽 위 ⋮ → <b>앱 설치</b> 또는 <b>홈 화면에 추가</b>를 누르세요.</p>';
-  else if(/Edg\//.test(ua))h='<p><b>PC 엣지</b>: 주소창 오른쪽의 <b>앱 설치 아이콘</b>(⊞)을 누르거나, ⋯ → 앱 → <b>이 사이트를 앱으로 설치</b>를 누르세요.</p>';
-  else if(/Chrome\//.test(ua))h='<p><b>PC 크롬</b>: 주소창 오른쪽의 <b>설치 아이콘</b>(⊕)을 누르거나, ⋮ → 전송, 저장, 공유 → <b>페이지를 앱으로 설치</b>를 누르세요.</p>';
+  else if(instHave)h='<p><b>이 기기에는 이미 할수있어가 설치돼 있어요.</b> 그래서 브라우저가 설치 창을 다시 띄우지 않아요. 바탕화면이나 시작 메뉴(작업 표시줄 검색)에서 <b>할수있어</b>를 찾아 여세요.</p>';
+  else if(/Edg\/|Chrome\//.test(ua)){const ed=/Edg\//.test(ua);h='<p><b>브라우저가 지금 설치 창을 막고 있어요.</b> 이 사이트에서 설치 창을 한 번 닫았거나, 이미 설치해 둔 경우에 이래요. (웹사이트가 강제로 설치 창을 열 수는 없어요)</p><p>① 주소창에 <b>'+(ed?'edge://apps':'chrome://apps')+'</b> 를 입력해 보세요. 거기에 할수있어가 있으면 이미 설치된 거예요. 거기서 바로 열거나 지운 뒤 다시 설치할 수 있어요.<br>② 없으면 주소창 맨 왼쪽 자물쇠(사이트 정보) → <b>사이트 권한 초기화</b> 후 새로고침하고 <b>설치</b>를 다시 누르세요.</p>';}
   else h='<p>이 브라우저는 바로 설치를 지원하지 않아요. 폰은 크롬·삼성 인터넷·사파리, PC는 크롬·엣지로 열어주세요.</p>';
   h+='<p>설치해도 기록은 그대로예요. 다만 폰과 PC는 기록이 따로 저장되니, 옮길 때는 백업·복구를 쓰세요.</p>';
   g.innerHTML=h;g.hidden=false;if(scroll)g.scrollIntoView({block:'center',behavior:'smooth'});

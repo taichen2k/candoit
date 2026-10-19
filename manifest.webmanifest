@@ -10,8 +10,31 @@
   "theme_color": "#3056e0",
   "lang": "ko",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
-  ]
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://taichen2k.github.io/candoit/manifest.webmanifest",
+      "id": "https://taichen2k.github.io/candoit/"
+    }
+  ],
+  "prefer_related_applications": false
 }
