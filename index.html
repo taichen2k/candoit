@@ -181,7 +181,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <ul class="tasks" id="onceList"></ul>
   </div>
 
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">7</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">8</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -218,16 +218,16 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
         <div class="item"><div class="lbl">매시 정각 알림<small id="pushState">꺼져 있어요</small></div>
           <button class="switch" id="pushSw" type="button" role="switch" aria-checked="false" aria-label="매시 정각 알림"></button></div>
         <div class="panel" style="padding-top:0"><span class="status" id="pushMsg" hidden></span></div>
-        <div class="item"><div class="lbl">알림 시간대</div>
-          <span style="display:flex;gap:6px;align-items:center"><label class="sr" for="startH">시작</label><select id="startH"></select>~<label class="sr" for="endH">끝</label><select id="endH"></select></span></div>
-        <div class="item"><div class="lbl">앱을 보고 있을 때 소리<small>시각을 정한 할 일도 이때 알려요</small></div>
-          <button class="switch" id="soundSw" type="button" role="switch" aria-checked="true" aria-label="앱을 보고 있을 때 소리"></button></div>
         <div class="panel" id="pushCodePanel" hidden>
           <p><b>마지막 한 단계예요.</b> 아래 알림 코드를 복사해서 깃허브 저장소 설정에 붙여넣으면 잠금화면 알림이 시작돼요. 붙여넣는 곳은 Claude에게 "알림 코드 등록해줘"라고 하면 대신 열어드려요.</p>
           <textarea class="codebox" id="pushCode" readonly aria-label="알림 코드"></textarea>
           <div class="row2"><button class="pill" type="button" id="copyCode">알림 코드 복사</button><button class="pill ghost" type="button" id="testNoti">이 폰에서 알림 시험</button></div>
           <p>알림 시간대를 바꾸면 코드도 바뀌어요. 그때는 새 코드를 다시 붙여넣어 주세요.</p>
         </div>
+        <div class="item"><div class="lbl">알림 시간대</div>
+          <span style="display:flex;gap:6px;align-items:center"><label class="sr" for="startH">시작</label><select id="startH"></select>~<label class="sr" for="endH">끝</label><select id="endH"></select></span></div>
+        <div class="item"><div class="lbl">앱을 보고 있을 때 소리<small>시각을 정한 할 일도 이때 알려요</small></div>
+          <button class="switch" id="soundSw" type="button" role="switch" aria-checked="true" aria-label="앱을 보고 있을 때 소리"></button></div>
         <div class="panel" id="installGuide" hidden>
           <p><b>아이폰은 홈 화면에 설치해야 알림이 와요.</b></p>
           <ol><li>사파리에서 이 페이지를 열고 아래쪽 공유 버튼(□↑)을 누르세요.</li><li><b>홈 화면에 추가</b>를 누르세요.</li><li>홈 화면의 할수있어 아이콘으로 다시 열고 알림을 켜세요.</li></ol>
@@ -268,11 +268,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">7</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">8</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">7</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">8</span></footer>
   </div>
 </section>
 
@@ -288,7 +288,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='7';
+const VERSION='8';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -462,9 +462,9 @@ $('pushSw').onclick=()=>{
     if(perm!=='granted'){pushMsg('알림 허용이 필요해요. 허용 창에서 "허용"을 눌러주세요.',true);refreshPush();return;}
     try{if(cur)await cur.unsubscribe().catch(()=>{});
       await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});
-      pushMsg('알림을 켰어요. 아래 알림 코드를 복사해 주세요.');}
+      pushMsg('알림을 켰어요. 바로 아래 "알림 코드 복사"를 눌러주세요.');}
     catch(e){pushMsg('알림을 켜지 못했어요: '+(e&&e.message||e)+' — 화면을 캡처해서 Claude에게 보내주세요.',true);}
-    refreshPush();
+    await refreshPush();if(!$('pushCodePanel').hidden)$('copyCode').scrollIntoView({block:'center',behavior:'smooth'});
   })();
 };
 $('copyCode').onclick=async()=>{const t=$('pushCode').value;try{await navigator.clipboard.writeText(t);toast('알림 코드를 복사했어요');}catch(e){$('pushCode').select();toast('코드를 길게 눌러 복사해 주세요');}};
