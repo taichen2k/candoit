@@ -292,7 +292,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">30</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">31</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -468,11 +468,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">30</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">31</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">30</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">31</span></footer>
   </div>
 </section>
 
@@ -488,7 +488,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='30';
+const VERSION='31';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -944,7 +944,9 @@ async function refreshPush(){
   $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요');
   $('pushCodePanel').hidden=!on;if(on){const code=codeOf(sub);$('pushCode').value=code;
     let reg='';try{reg=localStorage.getItem('candoit.regcode')||'';}catch(e){}
-    if(reg&&reg!==code){if(!window.__codeWarned){window.__codeWarned=1;toast('알림 코드가 바뀌었어요. 설정에서 새 코드를 등록해 주세요');}pushMsg('알림 코드가 바뀌었어요. 새 코드를 다시 등록해야 잠금화면 알림이 와요.',true);showCode(true);$('gearBadge').hidden=false;}}
+    if(reg&&reg!==code){let only=false,ra=null;try{const dj=c=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(c.replace(/-/g,'+').replace(/_/g,'/')),x=>x.charCodeAt(0))));const o=dj(reg),n=dj(code);only=o.e===n.e;ra=o;}catch(e){}
+      const msg=only?'알림 시간대를 바꿔서 코드가 바뀌었어요. 지금 등록된 코드로는 예전 시간대('+pad(ra.a)+'시~'+pad(ra.b)+'시)에만 알림이 와요. 새 시간대로 받으려면 새 코드를 다시 등록하세요.':'알림 코드가 바뀌었어요. 새 코드를 다시 등록해야 잠금화면 알림이 와요.';
+      if(!window.__codeWarned&&!only){window.__codeWarned=1;toast('알림 코드가 바뀌었어요. 설정에서 새 코드를 등록해 주세요');}pushMsg(msg,true);showCode(true);$('gearBadge').hidden=false;}}
   S.settings.push=on;mirror();
   let lp=null;try{lp=await kvGet('lastPush');}catch(e){}
   const w=$('pushLast');$('pushLastWrap').hidden=!on;
