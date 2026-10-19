@@ -1,5 +1,5 @@
 /* 할수있어 서비스워커: 홈 화면 설치 + 잠금화면 알림 */
-const CACHE='candoit-v29';
+const CACHE='candoit-v30';
 const SHELL=['./','./index.html','./manifest.webmanifest','./fonts/pretendard.woff2','./icon-192.png','./icon-512.png','./icon-180.png','./badge-96.png','./favicon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -46,8 +46,11 @@ async function show(hourLabel){
 }
 // 어떤 오류가 나도 알림은 반드시 띄운다
 function fallback(){return self.registration.showNotification('✅ 할 일 알림',{body:'남은 할 일을 확인하세요.',tag:'candoit-hourly'});}
+// 정각 알림을 받은 시각을 남겨, 앱 설정에서 알림이 끊겼는지 알 수 있게 함
+function markPush(){return new Promise(res=>{try{const r=indexedDB.open('candoit',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');
+  r.onsuccess=()=>{try{const tx=r.result.transaction('kv','readwrite');tx.objectStore('kv').put(Date.now(),'lastPush');tx.oncomplete=()=>res();tx.onerror=()=>res();}catch(e){res()}};r.onerror=()=>res();}catch(e){res()}});}
 self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch(x){}
-  e.waitUntil(show(d.h!=null?pad(d.h)+':00':null).catch(fallback));});
+  e.waitUntil(Promise.all([show(d.h!=null?pad(d.h)+':00':null).catch(fallback),markPush()]));});
 self.addEventListener('message',e=>{if(e.data&&e.data.type==='test')e.waitUntil(show().catch(fallback));});
 self.addEventListener('notificationclick',e=>{e.notification.close();
   e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{for(const c of cs){if('focus' in c)return c.focus();}return self.clients.openWindow('./');}));});

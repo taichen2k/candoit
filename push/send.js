@@ -27,7 +27,8 @@ const hour = force ? new Date(Date.now() + 9 * 3600e3).getUTCHours() : kst.getUT
       await webpush.sendNotification({ endpoint: s.e, keys: s.k }, JSON.stringify({ h: hour }), { TTL: 1800, urgency: 'high' });
       sent++;
     } catch (e) {
-      console.log('보내기 실패(' + e.statusCode + '): ' + (e.statusCode === 404 || e.statusCode === 410 ? '이 기기의 알림이 꺼졌어요. 폰에서 알림을 다시 켜고 새 코드를 등록하세요.' : e.body || e.message));
+      // 실행 기록은 공개라서 코드·주소·응답 내용은 남기지 않고 상태 번호만 적음
+      console.log('보내기 실패(' + (e.statusCode || '연결 오류') + '): ' + (e.statusCode === 404 || e.statusCode === 410 ? '이 기기의 알림이 꺼졌어요. 폰에서 알림을 다시 켜고 새 코드를 등록하세요.' : '잠시 뒤 다시 시도돼요.'));
     }
   }
   console.log(hour + '시 알림 ' + sent + '건 보냄');

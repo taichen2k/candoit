@@ -292,7 +292,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">29</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">30</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -377,6 +377,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
       <div class="card">
         <div class="item"><div class="lbl">매시 정각 알림<small id="pushState">꺼져 있어요</small></div>
           <button class="switch" id="pushSw" type="button" role="switch" aria-checked="false" aria-label="매시 정각 알림"></button></div>
+        <div class="panel" id="pushLastWrap" style="padding-top:0" hidden><span id="pushLast" style="font-size:13px"></span></div>
         <div class="panel" id="pushMsgWrap" style="padding-top:0" hidden><span class="status" id="pushMsg"></span></div>
         <div id="pushCodePanel" hidden>
           <button class="item btn" type="button" id="codeToggle" aria-expanded="false" aria-controls="pushCodeBody"><span class="lbl">알림 코드 · 알림 시험<small>폰을 바꾸거나 시간대를 바꿨을 때만 필요해요</small></span><span class="arrow" id="codeArrow">›</span></button>
@@ -413,9 +414,25 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
         <div id="srvList"></div>
         <div class="item"><div class="lbl">하루 한 번 자동 백업<small id="autoState">앱을 열 때 오늘 백업이 없으면 서버에 저장해요</small></div>
           <button class="switch" id="autoSw" type="button" role="switch" aria-checked="true" aria-label="하루 한 번 자동 백업"></button></div>
+        <div class="item"><div class="lbl">백업 비밀번호 잠금<small id="lockState">꺼져 있어요</small></div>
+          <button class="pill ghost" type="button" id="lockBtn" style="padding:9px 14px;font-size:14px">켜기</button></div>
+        <div class="panel" id="lockPanel" hidden>
+          <p>서버 백업과 파일 백업을 이 비밀번호로 잠가요. 이 기기에서는 지금 한 번만 넣으면 자동 백업도 그대로 돼요. 다른 폰·PC에서 복구할 때만 다시 물어봐요.</p>
+          <p><b style="color:var(--warn)">비밀번호를 잊으면 잠근 백업은 아무도 열 수 없어요.</b> 종이에 적어 두세요.</p>
+          <label class="sr" for="lockPw1">비밀번호</label><input id="lockPw1" class="srvin" type="password" placeholder="비밀번호 (6자 이상)" autocomplete="new-password">
+          <label class="sr" for="lockPw2">비밀번호 확인</label><input id="lockPw2" class="srvin" type="password" placeholder="한 번 더 입력" autocomplete="new-password">
+          <div class="row2"><button class="pill" type="button" id="lockSave">잠금 켜기</button><button class="pill ghost" type="button" id="lockCancel">취소</button></div>
+          <button class="pill ghost" type="button" id="lockOff" hidden style="color:var(--warn)">잠금 끄기</button>
+        </div>
+        <div class="panel" id="lostHint" hidden style="padding-top:8px"><p>폰을 잃어버리면 <a href="https://github.com/settings/personal-access-tokens" target="_blank" rel="noopener">깃허브 토큰 페이지</a>에서 <b>candoit-backup</b> 토큰을 바로 삭제하세요. 그러면 그 폰으로는 서버 백업에 못 들어가요.</p></div>
         <button class="item btn" type="button" id="doBackup"><span class="lbl">파일로 저장하기<small id="lastBackup">아직 백업한 적이 없어요</small></span><span class="arrow">›</span></button>
         <button class="item btn" type="button" id="doRestore"><span class="lbl">파일로 복구하기<small>다른 폰에서 만든 백업 파일도 돼요</small></span><span class="arrow">›</span></button>
         <input type="file" id="restoreFile" accept=".json,application/json" hidden>
+        <div class="panel" id="pwAsk" hidden>
+          <p id="pwAskMsg">잠긴 백업이에요. 백업할 때 정한 비밀번호를 넣어주세요.</p>
+          <label class="sr" for="pwAskIn">백업 비밀번호</label><input id="pwAskIn" class="srvin" type="password" autocomplete="current-password">
+          <div class="row2"><button class="pill" type="button" id="pwAskOk">열기</button><button class="pill ghost" type="button" id="pwAskNo">취소</button></div>
+        </div>
         <div class="panel" id="restoreConfirm" hidden>
           <div class="confirm">
             <span id="restoreInfo"></span>
@@ -451,11 +468,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">29</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">30</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">29</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">30</span></footer>
   </div>
 </section>
 
@@ -471,7 +488,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='29';
+const VERSION='30';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -744,11 +761,58 @@ $('resetAll').onclick=()=>{$('resetConfirm').hidden=false;};
 $('resetNo').onclick=()=>{$('resetConfirm').hidden=true;};
 $('resetYes').onclick=()=>{S.tasks={};S.days={};S.body={height:null,log:{}};save();$('resetConfirm').hidden=true;closeSettings();toast('모든 기록을 지웠어요');};
 
+/* ---------- 백업 비밀번호 잠금 (AES-GCM, 비밀번호→PBKDF2) ---------- */
+const LKM='candoit.lock',ITER=310000;
+const u8b=a=>{let s='';a=new Uint8Array(a);for(let i=0;i<a.length;i+=8192)s+=String.fromCharCode(...a.subarray(i,i+8192));return btoa(s);};
+const bu8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function kvGet(k){const db=await idb();return new Promise((res,rej)=>{const g=db.transaction('kv').objectStore('kv').get(k);g.onsuccess=()=>res(g.result);g.onerror=()=>rej(g.error);});}
+async function kvPut(k,v){const db=await idb();return new Promise((res,rej)=>{const tx=db.transaction('kv','readwrite');v===undefined?tx.objectStore('kv').delete(k):tx.objectStore('kv').put(v,k);tx.oncomplete=()=>res();tx.onerror=()=>rej(tx.error);});}
+function lockMeta(){try{const m=JSON.parse(localStorage.getItem(LKM)||'null');return m&&m.salt?m:null;}catch(e){return null;}}
+async function kdf(pw,salt,iter){const base=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2',hash:'SHA-256',salt:bu8(salt),iterations:iter},base,{name:'AES-GCM',length:256},false,['encrypt','decrypt']);}
+async function lockKey(){if(!lockMeta())return null;try{return (await kvGet('bkkey'))||null;}catch(e){return null;}}
+async function packBackup(obj){const m=lockMeta();if(!m)return JSON.stringify(obj,null,1);
+  const key=await lockKey();if(!key)throw new Error('백업 잠금 열쇠가 없어요. 설정에서 백업 비밀번호를 다시 넣어주세요');
+  const iv=crypto.getRandomValues(new Uint8Array(12));const ct=await crypto.subtle.encrypt({name:'AES-GCM',iv},key,new TextEncoder().encode(JSON.stringify(obj)));
+  return JSON.stringify({app:'할수있어',enc:1,savedAt:obj.savedAt,kdf:'PBKDF2-SHA256',iter:m.iter,salt:m.salt,iv:u8b(iv),ct:u8b(ct)});}
+let pwWait=null;
+function askPw(msg){$('pwAskMsg').textContent=msg||'잠긴 백업이에요. 백업할 때 정한 비밀번호를 넣어주세요.';$('pwAskIn').value='';$('pwAsk').hidden=false;$('pwAsk').scrollIntoView({block:'center',behavior:'smooth'});setTimeout(()=>$('pwAskIn').focus(),200);
+  return new Promise(res=>{pwWait=res;});}
+$('pwAskOk').onclick=()=>{const v=$('pwAskIn').value;$('pwAsk').hidden=true;$('pwAskIn').value='';if(pwWait){pwWait(v||null);pwWait=null;}};
+$('pwAskIn').onkeydown=e=>{if(e.key==='Enter')$('pwAskOk').click();};
+$('pwAskNo').onclick=()=>{$('pwAsk').hidden=true;$('pwAskIn').value='';if(pwWait){pwWait(null);pwWait=null;}};
+async function openBackup(j){if(!j||j.enc!==1)return j;
+  if(typeof j.salt!=='string'||typeof j.iv!=='string'||typeof j.ct!=='string')throw new Error('백업 파일이 손상됐어요');
+  const iter=Math.min(Math.max(+j.iter||ITER,100000),5000000);
+  const dec=async key=>JSON.parse(new TextDecoder().decode(await crypto.subtle.decrypt({name:'AES-GCM',iv:bu8(j.iv)},key,bu8(j.ct))));
+  const m=lockMeta();if(m&&m.salt===j.salt){const k=await lockKey();if(k){try{return await dec(k);}catch(e){}}}
+  let msg;for(let i=0;i<3;i++){const pw=await askPw(msg);if(!pw)throw new Error('취소했어요');
+    toast('여는 중…');try{return await dec(await kdf(pw,j.salt,iter));}catch(e){msg='비밀번호가 맞지 않아요. 다시 넣어주세요.';}}
+  throw new Error('비밀번호가 맞지 않아요');}
+function drawLock(){const m=lockMeta(),st=$('lockState');
+  if(m){const d=new Date(m.at||0);st.textContent='켜져 있어요 · 백업이 잠겨서 저장돼요'+(m.at?' ('+(d.getMonth()+1)+'월 '+d.getDate()+'일 설정)':'');st.className='t-ok';$('lockBtn').textContent='바꾸기';}
+  else{st.textContent=gh()?'꺼져 있어요 · 서버 백업을 쓰니 켜두는 걸 권해요':'꺼져 있어요';st.className=gh()?'t-warn':'';$('lockBtn').textContent='켜기';}
+  $('lostHint').hidden=!gh();}
+$('lockBtn').onclick=()=>{const on=!!lockMeta();$('lockPanel').hidden=!$('lockPanel').hidden;$('lockSave').textContent=on?'비밀번호 바꾸기':'잠금 켜기';$('lockOff').hidden=!on;$('lockPw1').value='';$('lockPw2').value='';if(!$('lockPanel').hidden)$('lockPw1').focus();};
+$('lockCancel').onclick=()=>{$('lockPanel').hidden=true;$('lockPw1').value='';$('lockPw2').value='';};
+$('lockSave').onclick=async()=>{const a=$('lockPw1').value,b=$('lockPw2').value;
+  if(a.length<6){toast('비밀번호는 6자 이상으로 정해주세요');return;}if(a!==b){toast('두 비밀번호가 달라요');return;}
+  const was=!!lockMeta();$('lockSave').disabled=true;
+  try{const salt=u8b(crypto.getRandomValues(new Uint8Array(16)));const key=await kdf(a,salt,ITER);await kvPut('bkkey',key);
+    localStorage.setItem(LKM,JSON.stringify({salt,iter:ITER,at:Date.now()}));
+    $('lockPanel').hidden=true;$('lockPw1').value='';$('lockPw2').value='';drawLock();
+    toast(was?'백업 비밀번호를 바꿨어요':'백업 잠금을 켰어요');
+    if(gh())srvBackup(false,true);}
+  catch(e){toast('잠금을 켜지 못했어요: '+(e.message||e));}
+  $('lockSave').disabled=false;};
+$('lockOff').onclick=async()=>{if($('lockOff').dataset.c!=='1'){$('lockOff').dataset.c='1';$('lockOff').textContent='정말 끄기 (다음 백업부터 잠그지 않아요)';setTimeout(()=>{$('lockOff').dataset.c='';$('lockOff').textContent='잠금 끄기';},4000);return;}
+  $('lockOff').dataset.c='';try{localStorage.removeItem(LKM);await kvPut('bkkey',undefined);}catch(e){}$('lockPanel').hidden=true;drawLock();toast('백업 잠금을 껐어요. 이미 잠근 백업은 그 비밀번호로 열어요');};
+
 /* ---------- 백업 · 복구 ---------- */
 function stamp(d){return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds());}
 async function backup(){
   const now=new Date();const name='할수있어_'+stamp(now)+'.json';
-  const data=JSON.stringify({app:'할수있어',version:VERSION,savedAt:now.toISOString(),tasks:S.tasks,days:S.days,settings:S.settings,body:S.body},null,1);
+  let data;try{data=await packBackup({app:'할수있어',version:VERSION,savedAt:now.toISOString(),tasks:S.tasks,days:S.days,settings:S.settings,body:S.body});}catch(e){toast(e.message);return;}
   const file=new File([data],name,{type:'application/json'});
   let ok=false;
   try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});ok=true;}}
@@ -776,23 +840,23 @@ let srvItems=[];
 async function srvListLoad(){const a=await ghApi('/contents/backups');
   srvItems=(Array.isArray(a)?a:[]).filter(x=>/^할수있어_\d{8}_\d{6}\.json$/.test(x.name)).sort((x,y)=>x.name<y.name?1:-1);return srvItems;}
 function nameDate(n){const m=n.match(/_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})/);return m?m[1]+'.'+m[2]+'.'+m[3]+' '+m[4]+':'+m[5]:n;}
-async function srvBackup(silent){
+async function srvBackup(silent,purge){
   const now=new Date(),name='할수있어_'+stamp(now)+'.json';
-  const data=JSON.stringify({app:'할수있어',version:VERSION,savedAt:now.toISOString(),tasks:S.tasks,days:S.days,settings:S.settings,body:S.body},null,1);
-  try{if(!silent)toast('서버에 백업하는 중…');
+  try{const data=await packBackup({app:'할수있어',version:VERSION,savedAt:now.toISOString(),tasks:S.tasks,days:S.days,settings:S.settings,body:S.body});
+    if(!silent)toast('서버에 백업하는 중…');
     await ghApi('/contents/backups/'+encodeURIComponent(name),{method:'PUT',body:JSON.stringify({message:'백업 '+name,content:b64e(data)})});
     const list=await srvListLoad();
-    for(const old of list.slice(KEEP)){await ghApi('/contents/backups/'+encodeURIComponent(old.name),{method:'DELETE',body:JSON.stringify({message:'오래된 백업 정리',sha:old.sha})}).catch(()=>{});}
-    srvItems=list.slice(0,KEEP);
+    for(const old of list.filter(x=>x.name!==name).slice(purge?0:KEEP-1)){await ghApi('/contents/backups/'+encodeURIComponent(old.name),{method:'DELETE',body:JSON.stringify({message:'오래된 백업 정리',sha:old.sha})}).catch(()=>{});}
+    srvItems=purge?list.filter(x=>x.name===name):list.slice(0,KEEP);
     S.lastBackup=now.getTime();S.settings.srvDay=keyOf(now);save();drawSrv();
     if(silent){S.settings.autoLog={t:now.getTime(),ok:true,name};S.settings.autoNames=[name].concat(S.settings.autoNames||[]).slice(0,10);save();drawSrv();}
-    if(!silent)toast('서버에 백업했어요 ('+name+')');}
+    if(!silent)toast(purge?'잠근 백업을 새로 올리고, 그 전 백업은 지웠어요':'서버에 백업했어요 ('+name+')');}
   catch(e){if(silent){S.settings.autoLog={t:now.getTime(),ok:false,err:String(e.message||e)};save();}if(!silent)toast('백업하지 못했어요: '+e.message);drawSrv(e.message);}
 }
-function drawSrv(err){const g=gh();
+function drawSrv(err){drawLock();const g=gh();if(g&&!g.at){g.at=Date.now();ghSet(g);}const old=g&&Date.now()-g.at>365*864e5;
   $('srvNow').hidden=!g;$('srvConnBtn').textContent=g?'연결 해제':'연결하기';$('srvConnBtn').className='pill ghost';
-  $('srvState').textContent=err?'오류: '+err:(g?g.repo+' · 최근 '+KEEP+'개 보관':'연결 안 됨 · 깃허브 비공개 저장소에 최근 3개 보관');
-  $('srvState').className=err?'t-bad':'';
+  $('srvState').textContent=err?'오류: '+err:(g?(old?'연결한 지 1년이 지났어요 · 새 토큰으로 바꿔 주세요':g.repo+' · 최근 '+KEEP+'개 보관'):'연결 안 됨 · 깃허브 비공개 저장소에 최근 3개 보관');
+  $('srvState').className=err?'t-bad':(old?'t-warn':'');
   $('autoSw').setAttribute('aria-checked',S.settings.autoSrv!==false);
   {const L=S.settings.autoLog,a=$('autoState');if(L){const d=new Date(L.t);const w=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+'일월화수목금토'[d.getDay()]+') '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');a.textContent=L.ok?'마지막 자동 백업 '+w+' 성공':'마지막 자동 백업 '+w+' 실패 · '+L.err;a.className=L.ok?'':'t-bad';}else{a.textContent='아직 자동 백업 기록이 없어요 · 앱을 열 때 오늘 백업이 없으면 저장해요';a.className='';}}$('autoSw').closest('.item').hidden=!g;
   const el=$('srvList');el.innerHTML='';if(!g)return;
@@ -809,7 +873,7 @@ function drawSrv(err){const g=gh();
 }
 async function srvRestore(it){
   try{const f=await ghApi('/contents/backups/'+encodeURIComponent(it.name));if(!f||!f.content)throw new Error('파일을 찾지 못했어요');
-    const j=JSON.parse(b64d(f.content));if(!j||typeof j.tasks!=='object'||typeof j.days!=='object')throw new Error('할수있어 백업이 아니에요');
+    let j=JSON.parse(b64d(f.content));j=await openBackup(j);if(!j||typeof j.tasks!=='object'||typeof j.days!=='object')throw new Error('할수있어 백업이 아니에요');
     pending=j;const n=Object.keys(j.tasks).length,dn=Object.keys(j.days).length,bn=Object.keys((j.body&&j.body.log)||{}).length;
     $('restoreInfo').innerHTML='<b>'+esc(it.name)+'</b><br>할 일 '+n+'개 · 기록 '+dn+'일치'+(bn?' · 몸 기록 '+bn+'일':'')+' · '+nameDate(it.name)+' 백업';
     $('restoreConfirm').hidden=false;$('restoreConfirm').scrollIntoView({block:'center',behavior:'smooth'});}
@@ -823,7 +887,7 @@ $('srvCancel').onclick=()=>{$('srvConn').hidden=true;$('srvTok').value='';};
 $('srvSave').onclick=async()=>{const repo=$('srvRepo').value.trim().replace(/^https:\/\/github\.com\//,'').replace(/\/$/,''),token=$('srvTok').value.trim();
   if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){toast('저장소는 "아이디/이름" 형식으로 적어주세요');return;}
   if(!token){toast('접근 토큰을 넣어주세요');return;}
-  ghSet({repo,token});
+  ghSet({repo,token,at:Date.now()});
   try{const info=await ghApi('');if(!info)throw new Error('저장소를 찾지 못했어요. 이름과 토큰 권한을 확인해 주세요');
     if(!info.private){ghSet(null);toast('공개 저장소에는 백업할 수 없어요. 비공개 저장소를 써주세요');return;}
     $('srvConn').hidden=true;$('srvTok').value='';toast('서버 백업에 연결했어요');await srvRefresh();
@@ -839,7 +903,9 @@ let pending=null;
 $('doRestore').onclick=()=>{$('restoreFile').value='';$('restoreFile').click();};
 $('restoreFile').onchange=async()=>{
   const f=$('restoreFile').files[0];if(!f)return;
-  try{const j=JSON.parse(await f.text());if(!j||typeof j.tasks!=='object'||typeof j.days!=='object')throw 0;
+  let j;try{j=JSON.parse(await f.text());}catch(e){toast('할수있어 백업 파일이 아니에요. 파일을 다시 골라주세요.');return;}
+  try{j=await openBackup(j);}catch(e){toast(e.message);return;}
+  try{if(!j||typeof j.tasks!=='object'||typeof j.days!=='object')throw 0;
     pending=j;const n=Object.keys(j.tasks).length,dn=Object.keys(j.days).length,bn=Object.keys((j.body&&j.body.log)||{}).length;
     $('restoreInfo').innerHTML='<b>'+esc(f.name)+'</b><br>할 일 '+n+'개 · 기록 '+dn+'일치'+(bn?' · 몸 기록 '+bn+'일':'')+(j.savedAt?' · '+fmtDate(new Date(j.savedAt))+' 백업':'');
     $('restoreConfirm').hidden=false;}
@@ -878,8 +944,15 @@ async function refreshPush(){
   $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요');
   $('pushCodePanel').hidden=!on;if(on){const code=codeOf(sub);$('pushCode').value=code;
     let reg='';try{reg=localStorage.getItem('candoit.regcode')||'';}catch(e){}
-    if(reg&&reg!==code){pushMsg('알림 코드가 바뀌었어요. 새 코드를 다시 등록해야 잠금화면 알림이 와요.',true);showCode(true);$('gearBadge').hidden=false;}}
+    if(reg&&reg!==code){if(!window.__codeWarned){window.__codeWarned=1;toast('알림 코드가 바뀌었어요. 설정에서 새 코드를 등록해 주세요');}pushMsg('알림 코드가 바뀌었어요. 새 코드를 다시 등록해야 잠금화면 알림이 와요.',true);showCode(true);$('gearBadge').hidden=false;}}
   S.settings.push=on;mirror();
+  let lp=null;try{lp=await kvGet('lastPush');}catch(e){}
+  const w=$('pushLast');$('pushLastWrap').hidden=!on;
+  if(on){const now=new Date(),h=now.getHours(),st=S.settings.start,en=S.settings.end;
+    if(!lp){w.textContent='아직 받은 정각 알림이 없어요';w.className='';}
+    else{const d=new Date(lp),late=h>=st+2&&h<=en+1&&Date.now()-lp>2*3600e3+10*60e3;
+      w.textContent=(late?'⚠ 최근 2시간 넘게 정각 알림이 안 왔어요 (마지막 ':'마지막 정각 알림 받음 ')+(d.getMonth()+1)+'/'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())+(late?'). cron-job.org가 멈췄거나 알림 코드가 바뀌었을 수 있어요.':'');
+      w.className=late?'t-bad':'';if(late)$('gearBadge').hidden=false;}}
 }
 $('pushSw').onclick=()=>{
   const why=pushSupport();
