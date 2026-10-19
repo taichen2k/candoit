@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#0f131b" media="(prefers-color-scheme: dark)">
 <title>할수있어</title>
 <link rel="manifest" href="manifest.webmanifest">
+<script>window.__bip=null;addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__bip=e;window.dispatchEvent(new Event("bip-ready"));});</script>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="icon" href="icon-192.png" sizes="192x192" type="image/png">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -290,7 +291,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">22</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">23</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -443,11 +444,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
         <div class="item"><div class="lbl">앱 설치하기<small id="instTxt">홈 화면이나 PC에 앱처럼 설치해요</small></div>
           <button class="pill" type="button" id="instBtn" style="padding:9px 14px;font-size:14px">설치</button></div>
         <div class="panel" id="instGuide" hidden></div>
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">22</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">23</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">22</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">23</span></footer>
   </div>
 </section>
 
@@ -463,7 +464,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='22';
+const VERSION='23';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -882,16 +883,16 @@ $('copyCode').onclick=async()=>{const t=$('pushCode').value;try{localStorage.set
 $('testNoti').onclick=async()=>{try{const reg=await getReg();await mirror();await reg.showNotification('할수있어 시험 알림',{body:'이 알림이 보이면 폰 알림 설정은 정상이에요.',badge:'badge-96.png'});pushMsg('시험 알림을 띄웠어요. 안 보이면 폰의 삼성 인터넷 알림이 꺼져 있는 거예요.');}catch(e){pushMsg('시험 알림을 띄우지 못했어요: '+(e&&e.message||e),true);}};
 
 /* ---------- 앱 설치 ---------- */
-let instEvt=null;
+let instEvt=window.__bip||null;
 const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;drawInstall();});
+window.addEventListener('bip-ready',()=>{instEvt=window.__bip;drawInstall();});
 window.addEventListener('appinstalled',()=>{instEvt=null;toast('할수있어를 설치했어요');drawInstall();});
 function drawInstall(){
   const done=isStandalone();
-  $('instBtn').hidden=done;$('instTxt').textContent=done?'앱으로 설치되어 실행 중이에요':(instEvt?'버튼을 누르면 바로 설치돼요':'홈 화면이나 PC에 앱처럼 설치해요');
+  $('instBtn').hidden=done;$('instBtn').textContent=instEvt?'설치':'방법 보기';$('instTxt').textContent=done?'앱으로 설치되어 실행 중이에요':(instEvt?'버튼을 누르면 바로 설치돼요':'홈 화면이나 PC에 앱처럼 설치해요');
 }
 $('instBtn').onclick=async()=>{
-  if(instEvt){instEvt.prompt();const r=await instEvt.userChoice.catch(()=>null);instEvt=null;if(r&&r.outcome==='accepted')toast('설치를 시작했어요');drawInstall();return;}
+  if(instEvt){instEvt.prompt();const r=await instEvt.userChoice.catch(()=>null);instEvt=null;window.__bip=null;if(r&&r.outcome==='accepted')toast('설치를 시작했어요');drawInstall();return;}
   const ua=navigator.userAgent,g=$('instGuide');let h='';
   if(/Claude\/|Electron/.test(ua))h='<p><b>지금은 Claude 앱 안의 화면이라 설치가 안 돼요.</b> PC의 <b>크롬</b>이나 <b>엣지</b>를 열고 주소창에 <b>taichen2k.github.io/candoit</b>을 입력한 뒤, 여기 설정에서 <b>설치</b>를 다시 누르세요.</p>';
   else if(isIOS)h='<p><b>아이폰·아이패드</b>: 사파리 아래쪽 공유 버튼(□↑) → <b>홈 화면에 추가</b>를 누르세요. 아이폰은 이렇게 설치해야 알림도 와요.</p>';
@@ -901,7 +902,7 @@ $('instBtn').onclick=async()=>{
   else if(/Chrome\//.test(ua))h='<p><b>PC 크롬</b>: 주소창 오른쪽의 <b>설치 아이콘</b>(⊕)을 누르거나, ⋮ → 전송, 저장, 공유 → <b>페이지를 앱으로 설치</b>를 누르세요.</p>';
   else h='<p>이 브라우저는 바로 설치를 지원하지 않아요. 폰은 크롬·삼성 인터넷·사파리, PC는 크롬·엣지로 열어주세요.</p>';
   h+='<p>설치해도 기록은 그대로예요. 다만 폰과 PC는 기록이 따로 저장되니, 옮길 때는 백업·복구를 쓰세요.</p>';
-  g.innerHTML=h;g.hidden=!g.hidden;
+  g.innerHTML=h;g.hidden=false;g.scrollIntoView({block:'center',behavior:'smooth'});
 };
 
 /* ---------- 앱을 보고 있을 때 알림 ---------- */
