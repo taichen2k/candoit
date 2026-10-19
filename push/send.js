@@ -52,4 +52,6 @@ const parse = c => { try { const s = JSON.parse(Buffer.from(c.replace(/-/g, '+')
     }
   }
   console.log(hour + '시 알림 ' + sent + '건 보냄');
+  // 결과 한 줄을 실행 요약(주석)으로도 남겨 밖에서 확인할 수 있게 함 (개수만, 코드·주소 없음)
+  console.log('::notice title=알림 결과::' + hour + '시 · 자동 등록 ' + auto.length + '대 · 보냄 ' + sent + '건');
 })();
