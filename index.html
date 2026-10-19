@@ -20,13 +20,13 @@
 /* 모바일 한 화면 플래너: 위 날짜·기록, 가운데 체크리스트, 아래 고정 입력바, 설정은 한 화면에 모음 */
 :root{
   --bg:#f4f6fa; --surface:#ffffff; --ink:#111827; --muted:#7a8496; --line:#e3e7ee;
-  --accent:#3056e0; --accent-ink:#ffffff; --soft:#e9eefc; --good:#16a36a; --warn:#e5484d; --amber:#b45309;
+  --accent:#3056e0; --accent-ink:#ffffff; --soft:#e9eefc; --good:#16a36a; --warn:#e5484d; --amber:#b45309; --l-sys:#c2410c; --l-dia:#3056e0; --ok-ink:#15803d; --bad-bg:#c53030;
   --f:"Pretendard",-apple-system,"Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){:root{
   --bg:#0f131b; --surface:#181e2a; --ink:#eef1f6; --muted:#8a93a5; --line:#262e3d;
-  --accent:#7f9bff; --accent-ink:#0f131b; --soft:#1f2840; --good:#3cc98a; --warn:#ff6b6f; --amber:#f5b54a; color-scheme:dark}}
+  --accent:#7f9bff; --accent-ink:#0f131b; --soft:#1f2840; --good:#3cc98a; --warn:#ff6b6f; --amber:#f5b54a; --l-sys:#e2702a; --l-dia:#6684f0; --ok-ink:#3cc98a; --bad-bg:#ff6b6f; color-scheme:dark}}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{background:var(--bg);color:var(--ink);margin:0}
 body{font-family:var(--f);font-size:16px;line-height:1.5;letter-spacing:-.01em;font-variant-numeric:tabular-nums;
@@ -160,6 +160,66 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 .pop{width:100%;max-width:420px;background:var(--surface);border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px;max-height:85vh;overflow:auto}
 .pop .hour{font-size:34px;font-weight:800;color:var(--accent);line-height:1;letter-spacing:-.03em}
 .pop ul.tasks{background:var(--bg)}
+.bodyc{display:flex;flex-direction:column;gap:12px;background:var(--surface);border-radius:16px;padding:14px 16px;border:1.5px solid color-mix(in srgb,var(--accent) 30%,transparent)}
+.bodyc .bh{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.bodyc .bh b{font-size:14px;color:var(--muted)}
+.bodyc .bh span{display:flex;gap:4px}
+.lnk{border:0;background:transparent;color:var(--accent);font-weight:700;font-size:13px;padding:6px 6px;border-radius:8px}
+.lnk.mute{color:var(--muted);font-weight:600}
+.bstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;border:0;background:transparent;padding:0;text-align:left;width:100%}
+.bs{display:flex;flex-direction:column;gap:2px;min-width:0}
+.bs small{font-size:12px;color:var(--muted)}
+.bs b{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums}
+.bs b i{font-style:normal;font-size:12px;font-weight:600;color:var(--muted)}
+.bs em{font-style:normal;font-size:11px;font-weight:600;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-ok{color:var(--ok-ink)!important}.t-mid{color:var(--accent)!important}.t-warn{color:var(--amber)!important}.t-bad{color:var(--warn)!important}
+.bempty{border:0;background:transparent;padding:0;text-align:left;font-size:14px;color:var(--muted)}
+.card2{background:var(--surface);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px}
+.card2 .hd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.card2 .hd label,.card2 .hd b{font-size:15px;font-weight:700}
+.card2 .hd span{font-size:12px;color:var(--muted)}
+.wrow{display:flex;align-items:center;gap:10px}
+.step{flex:none;width:48px;height:48px;border:0;border-radius:12px;background:var(--bg);font-size:24px;color:var(--accent)}
+.bigin{flex:1;display:flex;align-items:baseline;justify-content:center;gap:4px;background:var(--bg);border-radius:12px;padding:6px 12px}
+.bigin:focus-within{box-shadow:inset 0 0 0 2px var(--accent)}
+.bigin input{width:120px;border:0;background:transparent;text-align:right;font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;outline:none;padding:0}
+.bigin span{font-size:16px;font-weight:600;color:var(--muted)}
+.bp{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);gap:10px;align-items:end}
+.bp div{display:flex;flex-direction:column;gap:6px}
+.bp label{font-size:12px;color:var(--muted)}
+.bp input{width:100%;border:0;border-radius:12px;background:var(--bg);padding:10px 12px;text-align:center;font-size:30px;font-weight:800;font-variant-numeric:tabular-nums;outline:none}
+.bp input:focus{box-shadow:inset 0 0 0 2px var(--accent)}
+.bp .sl{font-size:28px;color:var(--muted);padding-bottom:10px}
+.bpst{display:flex;align-items:center;gap:8px;border-radius:10px;padding:9px 12px;background:var(--bg);font-size:12px;color:var(--muted)}
+.chipst{font-size:12px;font-weight:700;color:#fff;border-radius:999px;padding:3px 9px;white-space:nowrap}
+.c-ok{background:var(--ok-ink);color:var(--surface)}.c-mid{background:var(--accent);color:var(--accent-ink)}.c-warn{background:var(--amber);color:var(--surface)}.c-bad{background:var(--bad-bg);color:var(--surface)}
+.htrow{display:flex;align-items:center;gap:12px}
+.htrow .lbl{flex:1;display:flex;flex-direction:column;gap:2px}
+.htrow .lbl small{font-size:13px;color:var(--muted)}
+.htrow .lbl b{font-size:15px}
+.htedit{display:flex;gap:8px;align-items:center}
+.htedit input{flex:1;min-width:0;border:0;border-radius:12px;background:var(--bg);padding:10px 12px;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;outline:none}
+.htedit input:focus{box-shadow:inset 0 0 0 2px var(--accent)}
+.savebar{position:fixed;left:0;right:0;bottom:0;z-index:31;background:var(--surface);border-top:1px solid var(--line);
+  padding:12px max(16px,env(safe-area-inset-right,0px)) calc(14px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.savebar>div{max-width:520px;margin:0 auto;display:flex;flex-direction:column;gap:6px}
+.savebar small{text-align:center;font-size:12px;color:var(--muted)}
+.big{width:100%;border:0;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:16px;padding:15px}
+.seg{display:flex;background:var(--line);border-radius:10px;padding:3px}
+.seg button{border:0;border-radius:8px;background:transparent;font-size:13px;font-weight:600;padding:6px 12px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);font-weight:700}
+.chart{width:100%;height:auto;display:block;overflow:visible}
+.chart text{fill:var(--muted);font-size:10px;font-family:var(--f)}
+.chart .grid{stroke:var(--line)}
+.legend{display:flex;gap:10px;font-size:12px;color:var(--muted)}
+.legend span{display:flex;align-items:center;gap:4px}
+.legend i{width:12px;height:3px;border-radius:2px;display:inline-block}
+.htable{background:var(--surface);border-radius:16px;overflow:hidden}
+.hr{display:grid;grid-template-columns:56px minmax(0,1fr) minmax(0,1fr) auto;gap:8px;align-items:center;padding:12px 16px;font-size:15px;font-variant-numeric:tabular-nums;border:0;background:transparent;width:100%;text-align:left}
+.hr+.hr{border-top:1px solid var(--line)}
+.hr.head{font-size:12px;color:var(--muted)}
+.hr .d{color:var(--muted)}
+.tag{font-size:11px;font-weight:700;border-radius:999px;padding:3px 8px;background:var(--bg)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(140px + env(safe-area-inset-bottom,0px));z-index:60;background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:12px;font-size:14px;max-width:calc(100% - 32px);text-align:center}
 @media (prefers-reduced-motion:no-preference){.pop{animation:up .22s ease-out}@keyframes up{from{transform:translateY(16px);opacity:.5}}}
 </style>
@@ -193,6 +253,15 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="week" id="week"></div>
   </div>
 
+  <div class="bodyc" id="bodyCard">
+    <div class="bh"><b id="bodyTitle">오늘 몸 기록</b><span><button type="button" class="lnk mute" id="openHist">모아보기</button><button type="button" class="lnk" id="openBody">기록하기 ›</button></span></div>
+    <button type="button" class="bstats" id="bodyStats" aria-label="몸 기록 입력하기">
+      <span class="bs"><small>체중</small><b id="bsW">–</b><em id="bsWd"></em></span>
+      <span class="bs"><small>혈압</small><b id="bsB">–</b><em id="bsBd"></em></span>
+      <span class="bs"><small>BMI</small><b id="bsI">–</b><em id="bsId"></em></span>
+    </button>
+  </div>
+
   <div class="nudge" id="backupNudge" hidden>
     <span id="backupNudgeTxt">백업한 지 7일 지났어요</span>
     <button type="button" id="nudgeBackup">지금 백업</button>
@@ -208,7 +277,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">15</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">16</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -232,6 +301,55 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 </div>
 
 <!-- 설정 -->
+<section class="settings" id="bodyView" hidden aria-labelledby="bodyH" style="padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))">
+  <div class="wrap" style="gap:16px">
+    <div class="s-head">
+      <button class="back" id="bodyBack" type="button" aria-label="뒤로"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div style="flex:1"><h2 id="bodyH" style="margin:0;font-size:22px;font-weight:800">오늘 몸 기록</h2><div id="bodySub" style="font-size:13px;color:var(--muted)"></div></div>
+    </div>
+    <div class="card2">
+      <div class="hd"><label for="inW">체중</label><span id="prevW"></span></div>
+      <div class="wrow">
+        <button type="button" class="step" id="wMinus" aria-label="0.1kg 빼기">−</button>
+        <div class="bigin"><input id="inW" type="text" inputmode="decimal" placeholder="0.0" autocomplete="off"><span>kg</span></div>
+        <button type="button" class="step" id="wPlus" aria-label="0.1kg 더하기">+</button>
+      </div>
+    </div>
+    <div class="card2">
+      <div class="hd"><b>혈압</b><span>단위 mmHg</span></div>
+      <div class="bp">
+        <div><label for="inS">최고 (수축기)</label><input id="inS" type="text" inputmode="numeric" placeholder="120" autocomplete="off"></div>
+        <span class="sl">/</span>
+        <div><label for="inD">최저 (이완기)</label><input id="inD" type="text" inputmode="numeric" placeholder="80" autocomplete="off"></div>
+      </div>
+      <div class="bpst" id="bpSt" hidden></div>
+    </div>
+    <div class="card2">
+      <div class="htrow" id="htShow">
+        <div class="lbl"><small id="htTxt">키를 넣으면 BMI를 계산해요</small><b id="bmiTxt"></b></div>
+        <button type="button" class="pill ghost" id="htEditBtn" style="padding:9px 12px;font-size:13px">키 수정</button>
+      </div>
+      <div class="htedit" id="htEdit" hidden>
+        <label class="sr" for="inH">키 (cm)</label><input id="inH" type="text" inputmode="decimal" placeholder="키 (cm)" autocomplete="off">
+        <button type="button" class="pill" id="htSave" style="padding:10px 14px;font-size:14px">확인</button>
+      </div>
+    </div>
+    <button type="button" class="lnk" id="bodyDel" hidden style="align-self:center;color:var(--warn)">이날 몸 기록 지우기</button>
+  </div>
+  <div class="savebar"><div><button type="button" class="big" id="bodySave">저장하기</button><small>빈칸은 저장되지 않아요. 체중만 적어도 돼요.</small></div></div>
+</section>
+
+<section class="settings" id="histView" hidden aria-labelledby="histH">
+  <div class="wrap" style="gap:16px">
+    <div class="s-head">
+      <button class="back" id="histBack" type="button" aria-label="뒤로"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h2 id="histH" style="flex:1">몸 기록</h2>
+      <div class="seg" role="group" aria-label="기간"><button type="button" id="rg7" aria-pressed="true">7일</button><button type="button" id="rg30" aria-pressed="false">30일</button></div>
+    </div>
+    <div id="histBody"></div>
+  </div>
+</section>
+
 <section class="settings" id="settings" hidden aria-labelledby="setTitle">
   <div class="wrap">
     <div class="s-head">
@@ -297,11 +415,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">15</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">16</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">15</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">16</span></footer>
   </div>
 </section>
 
@@ -317,7 +435,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='15';
+const VERSION='16';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -334,11 +452,11 @@ function lunar(d){try{const p=new Intl.DateTimeFormat('ko-KR-u-ca-dangi',{month:
 
 /* ---------- 저장: 이 기기(localStorage) + 알림용 사본(IndexedDB) ---------- */
 const LS='candoit.v1';
-const S={tasks:{},days:{},settings:{start:8,end:22,sound:true,push:false},lastBackup:0};
-function load(){try{const j=JSON.parse(localStorage.getItem(LS)||'null');if(j){S.tasks=j.tasks||{};S.days=j.days||{};Object.assign(S.settings,j.settings||{});S.lastBackup=j.lastBackup||0;}}catch(e){}}
+const S={tasks:{},days:{},settings:{start:8,end:22,sound:true,push:false},body:{height:null,log:{}},lastBackup:0};
+function load(){try{const j=JSON.parse(localStorage.getItem(LS)||'null');if(j){S.tasks=j.tasks||{};S.days=j.days||{};Object.assign(S.settings,j.settings||{});S.lastBackup=j.lastBackup||0;S.body=Object.assign({height:null,log:{}},j.body||{});}}catch(e){}}
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('candoit',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function mirror(){try{const db=await idb();const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put({tasks:S.tasks,days:S.days,settings:S.settings},'state');}catch(e){}}
-function save(){try{localStorage.setItem(LS,JSON.stringify({tasks:S.tasks,days:S.days,settings:S.settings,lastBackup:S.lastBackup}))}catch(e){toast('저장 공간이 부족해서 저장하지 못했어요');}mirror();render();}
+function save(){try{localStorage.setItem(LS,JSON.stringify({tasks:S.tasks,days:S.days,settings:S.settings,body:S.body,lastBackup:S.lastBackup}))}catch(e){toast('저장 공간이 부족해서 저장하지 못했어요');}mirror();render();}
 
 let today=keyOf(new Date());
 let openId=null,editId=null,newPinned=false,view=null;
@@ -367,7 +485,8 @@ function render(){
   const label=isToday?'오늘':(vd.getMonth()+1)+'월 '+vd.getDate()+'일';
   $('onceTitle').textContent=isToday?'오늘 할 일':label+' 할 일';
   $('newTitle').placeholder=isToday?'할 일 추가':label+' 할 일 추가';
-  $('bar').hidden=isPast||!$('settings').hidden;
+  $('bar').hidden=isPast||!$('settings').hidden||!$('bodyView').hidden||!$('histView').hidden;
+  drawBodyCard(vk,label);
   $('viewNote').hidden=isToday;
   $('viewNote').textContent=isPast?'지난 날짜예요. 체크만 고칠 수 있어요.':'미래 날짜예요. 이날 할 일을 미리 넣어둘 수 있어요.';
   const list=tasksFor(vk),ds=doneSet(vk);
@@ -437,6 +556,110 @@ function editRow(t){
 }
 document.addEventListener('click',e=>{if(openId&&!e.target.closest('.acts')&&!e.target.closest('.more')){openId=null;render();}});
 
+/* ---------- 몸 기록 ---------- */
+const num=v=>{const n=parseFloat(String(v).replace(',','.'));return isFinite(n)?n:null;};
+function bpCat(s,d){if(s==null||d==null)return null;
+  if(s>=160||d>=100)return {t:'고혈압 2기',k:'bad',s:'고혈압'};
+  if(s>=140||d>=90)return {t:'고혈압 1기',k:'bad',s:'고혈압'};
+  if(s>=130||d>=80)return {t:'고혈압 전단계',k:'warn',s:'전단계'};
+  if(s>=120)return {t:'주의 혈압',k:'mid',s:'주의'};
+  return {t:'정상 혈압',k:'ok',s:'정상'};}
+function bmiOf(w){const h=S.body.height;if(!w||!h)return null;return w/((h/100)*(h/100));}
+function bmiCat(b){if(b==null)return null;if(b<18.5)return {t:'저체중',k:'mid'};if(b<23)return {t:'정상',k:'ok'};if(b<25)return {t:'비만 전단계',k:'warn'};if(b<30)return {t:'1단계 비만',k:'bad'};if(b<35)return {t:'2단계 비만',k:'bad'};return {t:'3단계 비만',k:'bad'};}
+function prevWeight(k){const ks=Object.keys(S.body.log).filter(x=>x<k&&S.body.log[x].w!=null).sort();const p=ks[ks.length-1];return p?{k:p,w:S.body.log[p].w}:null;}
+const f1=n=>(Math.round(n*10)/10).toFixed(1);
+function drawBodyCard(vk,label){
+  const card=$('bodyCard');card.hidden=vk>today;if(vk>today)return;
+  $('bodyTitle').textContent=(vk===today?'오늘':label)+' 몸 기록';
+  const r=S.body.log[vk]||{};
+  $('openBody').textContent=(r.w!=null||r.s!=null)?'고치기 ›':'기록하기 ›';
+  if(r.w!=null){$('bsW').innerHTML=f1(r.w)+'<i> kg</i>';const p=prevWeight(vk);
+    if(p){const d=Math.round((r.w-p.w)*10)/10;$('bsWd').textContent=d===0?'지난번과 같아요':'지난번보다 '+Math.abs(d).toFixed(1)+(d<0?' ↓':' ↑');$('bsWd').className=d<0?'t-ok':'';}
+    else{$('bsWd').textContent='첫 기록';$('bsWd').className='';}}
+  else{$('bsW').textContent='–';$('bsWd').textContent='';}
+  if(r.s!=null&&r.d!=null){$('bsB').innerHTML=r.s+'<i>/</i>'+r.d;const c=bpCat(r.s,r.d);$('bsBd').textContent=c.s;$('bsBd').className='t-'+c.k;}
+  else{$('bsB').textContent='–';$('bsBd').textContent='';}
+  const b=bmiOf(r.w);
+  if(b){$('bsI').textContent=f1(b);$('bsId').textContent='키 '+S.body.height+'cm 기준';$('bsId').className='';}
+  else{$('bsI').textContent='–';$('bsId').textContent=S.body.height?'':'키를 넣으면 계산';$('bsId').className='';}
+}
+let bodyKey=null;
+function openBody(){bodyKey=V()>today?today:V();const d=keyToDate(bodyKey),r=S.body.log[bodyKey]||{};
+  $('bodyH').textContent=(bodyKey===today?'오늘':(d.getMonth()+1)+'월 '+d.getDate()+'일')+' 몸 기록';
+  $('bodySub').textContent=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+WD[d.getDay()]+')'+(r.t?' · '+r.t+' 저장':'');
+  $('inW').value=r.w!=null?f1(r.w):'';$('inS').value=r.s!=null?r.s:'';$('inD').value=r.d!=null?r.d:'';
+  const p=prevWeight(bodyKey);$('prevW').textContent=p?'지난번 '+f1(p.w)+' kg':'';
+  $('bodyDel').hidden=!S.body.log[bodyKey];$('htEdit').hidden=true;$('htShow').hidden=false;
+  showBp();showBmi();$('bodyView').hidden=false;$('bar').hidden=true;$('main').setAttribute('aria-hidden','true');window.scrollTo(0,0);}
+function closeBody(){$('bodyView').hidden=true;$('main').removeAttribute('aria-hidden');render();}
+function showBp(){const s=num($('inS').value),d=num($('inD').value),c=bpCat(s,d),el=$('bpSt');
+  if(!c){el.hidden=true;return;}el.hidden=false;
+  el.innerHTML='<span class="chipst c-'+c.k+'">'+c.t+'</span><span>대한고혈압학회 기준 · 참고용</span>';}
+function showBmi(){const h=S.body.height,b=bmiOf(num($('inW').value)),c=bmiCat(b);
+  $('htTxt').textContent=h?'키 '+h+' cm 기준':'키를 넣으면 BMI를 계산해요';
+  $('htEditBtn').textContent=h?'키 수정':'키 입력';
+  $('bmiTxt').innerHTML=b?'BMI '+f1(b)+' <span class="t-'+c.k+'" style="font-size:12px;font-weight:600">'+c.t+' · 참고용</span>':'';}
+$('openBody').onclick=openBody;$('bodyStats').onclick=openBody;$('bodyBack').onclick=closeBody;
+['inS','inD'].forEach(id=>$(id).addEventListener('input',showBp));
+$('inW').addEventListener('input',showBmi);
+function stepW(dl){let w=num($('inW').value);if(w==null){const p=prevWeight(bodyKey||today);w=p?p.w:60;}else w+=dl;$('inW').value=f1(Math.max(0,w));showBmi();}
+$('wMinus').onclick=()=>stepW(-0.1);$('wPlus').onclick=()=>stepW(0.1);
+$('htEditBtn').onclick=()=>{$('inH').value=S.body.height||'';$('htShow').hidden=true;$('htEdit').hidden=false;$('inH').focus();};
+$('htSave').onclick=()=>{const h=num($('inH').value);if(h!=null&&(h<50||h>250)){toast('키는 cm 단위로 적어주세요 (예: 175)');return;}
+  S.body.height=h?Math.round(h*10)/10:null;save();$('htEdit').hidden=true;$('htShow').hidden=false;showBmi();};
+$('bodySave').onclick=()=>{
+  const w=num($('inW').value),s=num($('inS').value),d=num($('inD').value);
+  if(w!=null&&(w<20||w>300)){toast('체중을 다시 확인해 주세요');return;}
+  if((s!=null)!==(d!=null)){toast('혈압은 최고와 최저를 함께 적어주세요');return;}
+  if(s!=null&&(s<60||s>260||d<30||d>160||d>=s)){toast('혈압 숫자를 다시 확인해 주세요');return;}
+  if(w==null&&s==null){toast('체중이나 혈압 중 하나는 적어주세요');return;}
+  const now=new Date(),r={t:pad(now.getHours())+':'+pad(now.getMinutes())};
+  if(w!=null)r.w=Math.round(w*10)/10;if(s!=null){r.s=Math.round(s);r.d=Math.round(d);}
+  S.body.log[bodyKey]=r;save();closeBody();toast('몸 기록을 저장했어요');};
+$('bodyDel').onclick=()=>{if($('bodyDel').dataset.c!=='1'){$('bodyDel').dataset.c='1';$('bodyDel').textContent='한 번 더 누르면 지워져요';setTimeout(()=>{$('bodyDel').dataset.c='';$('bodyDel').textContent='이날 몸 기록 지우기';},3000);return;}
+  delete S.body.log[bodyKey];$('bodyDel').dataset.c='';save();closeBody();toast('몸 기록을 지웠어요');};
+
+/* 모아보기 */
+let range=7;
+function openHist(){$('histView').hidden=false;$('bar').hidden=true;$('main').setAttribute('aria-hidden','true');drawHist();window.scrollTo(0,0);}
+function closeHist(){$('histView').hidden=true;$('main').removeAttribute('aria-hidden');render();}
+$('openHist').onclick=openHist;$('histBack').onclick=closeHist;
+$('rg7').onclick=()=>{range=7;drawHist();};$('rg30').onclick=()=>{range=30;drawHist();};
+function chart(keys,series,lo,hi,refs,label){
+  const W=320,H=120,L=26,R=8,T=8,B=8,n=keys.length,x=i=>L+(n<=1?(W-L-R)/2:i*(W-L-R)/(n-1)),y=v=>T+(hi-v)/(hi-lo)*(H-T-B);
+  let g='<svg class="chart" viewBox="0 0 '+W+' '+H+'" role="img" aria-label="'+label+'">';
+  [hi,lo].forEach(v=>{g+='<line class="grid" x1="'+L+'" x2="'+(W-R)+'" y1="'+y(v)+'" y2="'+y(v)+'"/><text x="0" y="'+(y(v)+3)+'">'+(Math.round(v*10)/10)+'</text>';});
+  (refs||[]).forEach(rf=>{if(rf.v>lo&&rf.v<hi)g+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y(rf.v)+'" y2="'+y(rf.v)+'" stroke="'+rf.c+'" stroke-dasharray="3 4" opacity=".6"/>';});
+  series.forEach(se=>{const pts=[];keys.forEach((k,i)=>{const v=se.get(k);if(v!=null)pts.push([x(i),y(v),v]);});
+    if(pts.length>1)g+='<polyline points="'+pts.map(p=>p[0].toFixed(1)+','+p[1].toFixed(1)).join(' ')+'" fill="none" stroke="'+se.c+'" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+    pts.forEach((p,i)=>{const last=i===pts.length-1;g+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(last?5:3)+'" fill="'+se.c+'" stroke="var(--surface)" stroke-width="2"><title>'+p[2]+'</title></circle>';});});
+  return g+'</svg>';}
+function drawHist(){
+  $('rg7').setAttribute('aria-pressed',range===7);$('rg30').setAttribute('aria-pressed',range===30);
+  const keys=[];for(let i=range-1;i>=0;i--)keys.push(keyOf(dayOffset(-i)));
+  const log=S.body.log,has=keys.filter(k=>log[k]);const el=$('histBody');
+  if(!has.length){el.innerHTML='<div class="card2"><span style="color:var(--muted);font-size:14px">최근 '+range+'일 동안 몸 기록이 없어요. 메인 화면의 <b>몸 기록</b>에서 체중이나 혈압을 적어보세요.</span></div>';return;}
+  const cs=getComputedStyle(document.documentElement),cSys=cs.getPropertyValue('--l-sys').trim(),cDia=cs.getPropertyValue('--l-dia').trim(),cAcc=cs.getPropertyValue('--accent').trim();
+  let h='';
+  const ws=keys.map(k=>log[k]&&log[k].w).filter(v=>v!=null);
+  if(ws.length){const first=ws[0],last=ws[ws.length-1],d=Math.round((last-first)*10)/10,lo=Math.floor(Math.min(...ws)-0.5),hi=Math.ceil(Math.max(...ws)+0.5);
+    h+='<div class="card2"><div class="hd"><b style="color:var(--muted);font-size:14px">체중</b><span class="'+(d<0?'t-ok':'')+'" style="font-weight:700">'+(ws.length>1?(d===0?'변화 없음':range+'일 동안 '+Math.abs(d).toFixed(1)+' kg '+(d<0?'↓':'↑')):'')+'</span></div>'+
+      '<div style="font-size:26px;font-weight:800;font-variant-numeric:tabular-nums">'+f1(last)+'<span style="font-size:14px;color:var(--muted);font-weight:600"> kg</span></div>'+
+      chart(keys,[{get:k=>log[k]&&log[k].w,c:cAcc}],lo,hi,null,'최근 '+range+'일 체중')+'</div>';}
+  const bs=keys.filter(k=>log[k]&&log[k].s!=null);
+  if(bs.length){const lr=log[bs[bs.length-1]],vals=bs.flatMap(k=>[log[k].s,log[k].d]),lo=Math.min(60,Math.floor(Math.min(...vals)/10)*10),hi=Math.max(140,Math.ceil(Math.max(...vals)/10)*10);
+    h+='<div class="card2"><div class="hd"><b style="color:var(--muted);font-size:14px">혈압</b><span class="legend"><span><i style="background:'+cSys+'"></i>최고</span><span><i style="background:'+cDia+'"></i>최저</span></span></div>'+
+      '<div style="font-size:26px;font-weight:800;font-variant-numeric:tabular-nums">'+lr.s+'<span style="color:var(--muted);font-weight:600">/</span>'+lr.d+'<span style="font-size:14px;color:var(--muted);font-weight:600"> mmHg</span></div>'+
+      chart(keys,[{get:k=>log[k]&&log[k].s,c:cSys},{get:k=>log[k]&&log[k].d,c:cDia}],lo,hi,[{v:120,c:cSys},{v:80,c:cDia}],'최근 '+range+'일 혈압')+
+      '<span style="font-size:12px;color:var(--muted)">점선은 정상 기준 120/80이에요</span></div>';}
+  h+='<div class="htable"><div class="hr head"><span>날짜</span><span>체중</span><span>혈압</span><span>상태</span></div>';
+  has.slice().reverse().forEach(k=>{const r=log[k],d=keyToDate(k),c=bpCat(r.s,r.d);
+    h+='<button type="button" class="hr" data-k="'+k+'"><span class="d">'+(k===today?'오늘':(d.getMonth()+1)+'/'+d.getDate())+'</span><span>'+(r.w!=null?f1(r.w):'–')+'</span><span>'+(r.s!=null?r.s+'/'+r.d:'–')+'</span>'+(c?'<span class="tag t-'+c.k+'">'+c.s+'</span>':'<span></span>')+'</button>';});
+  h+='</div><p style="margin:0;font-size:12px;color:var(--muted);text-align:center">줄을 누르면 그날 기록을 고칠 수 있어요</p>';
+  el.innerHTML=h;
+  el.querySelectorAll('.hr[data-k]').forEach(b=>b.onclick=()=>{const k=b.dataset.k;$('histView').hidden=true;view=k===today?null:k;openBody();});
+}
+
 /* ---------- 할 일 ---------- */
 function toggleDone(id,key){const k=key||V();if(k>today)return;const ds=doneSet(k);ds.has(id)?ds.delete(id):ds.add(id);S.days[k]=Object.assign({},S.days[k],{done:[...ds]});syncDay(k);if(k!==today)syncDay(today);save();}
 function removeTask(id){delete S.tasks[id];syncToday();save();}
@@ -463,13 +686,13 @@ $('endH').onchange=()=>{S.settings.end=+$('endH').value;save();refreshPush();};
 $('soundSw').onclick=()=>{S.settings.sound=!(S.settings.sound!==false);$('soundSw').setAttribute('aria-checked',S.settings.sound);save();if(S.settings.sound)unlockAudio();};
 $('resetAll').onclick=()=>{$('resetConfirm').hidden=false;};
 $('resetNo').onclick=()=>{$('resetConfirm').hidden=true;};
-$('resetYes').onclick=()=>{S.tasks={};S.days={};save();$('resetConfirm').hidden=true;closeSettings();toast('모든 기록을 지웠어요');};
+$('resetYes').onclick=()=>{S.tasks={};S.days={};S.body={height:null,log:{}};save();$('resetConfirm').hidden=true;closeSettings();toast('모든 기록을 지웠어요');};
 
 /* ---------- 백업 · 복구 ---------- */
 function stamp(d){return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds());}
 async function backup(){
   const now=new Date();const name='할수있어_'+stamp(now)+'.json';
-  const data=JSON.stringify({app:'할수있어',version:VERSION,savedAt:now.toISOString(),tasks:S.tasks,days:S.days,settings:S.settings},null,1);
+  const data=JSON.stringify({app:'할수있어',version:VERSION,savedAt:now.toISOString(),tasks:S.tasks,days:S.days,settings:S.settings,body:S.body},null,1);
   const file=new File([data],name,{type:'application/json'});
   let ok=false;
   try{if(navigator.canShare&&navigator.canShare({files:[file]})){await navigator.share({files:[file],title:name});ok=true;}}
@@ -483,13 +706,13 @@ $('doRestore').onclick=()=>{$('restoreFile').value='';$('restoreFile').click();}
 $('restoreFile').onchange=async()=>{
   const f=$('restoreFile').files[0];if(!f)return;
   try{const j=JSON.parse(await f.text());if(!j||typeof j.tasks!=='object'||typeof j.days!=='object')throw 0;
-    pending=j;const n=Object.keys(j.tasks).length,dn=Object.keys(j.days).length;
-    $('restoreInfo').innerHTML='<b>'+esc(f.name)+'</b><br>할 일 '+n+'개 · 기록 '+dn+'일치'+(j.savedAt?' · '+fmtDate(new Date(j.savedAt))+' 백업':'');
+    pending=j;const n=Object.keys(j.tasks).length,dn=Object.keys(j.days).length,bn=Object.keys((j.body&&j.body.log)||{}).length;
+    $('restoreInfo').innerHTML='<b>'+esc(f.name)+'</b><br>할 일 '+n+'개 · 기록 '+dn+'일치'+(bn?' · 몸 기록 '+bn+'일':'')+(j.savedAt?' · '+fmtDate(new Date(j.savedAt))+' 백업':'');
     $('restoreConfirm').hidden=false;}
   catch(e){toast('할수있어 백업 파일이 아니에요. 파일을 다시 골라주세요.');}
 };
 $('restoreNo').onclick=()=>{pending=null;$('restoreConfirm').hidden=true;};
-$('restoreYes').onclick=()=>{if(!pending)return;S.tasks=pending.tasks;S.days=pending.days;Object.assign(S.settings,pending.settings||{},{push:S.settings.push});
+$('restoreYes').onclick=()=>{if(!pending)return;S.tasks=pending.tasks;S.days=pending.days;if(pending.body)S.body=Object.assign({height:null,log:{}},pending.body);Object.assign(S.settings,pending.settings||{},{push:S.settings.push});
   pending=null;$('restoreConfirm').hidden=true;syncToday();save();closeSettings();toast('백업에서 복구했어요');};
 
 /* ---------- 잠금화면 알림 (웹 푸시) ---------- */
