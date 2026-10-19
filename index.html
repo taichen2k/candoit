@@ -181,7 +181,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <ul class="tasks" id="onceList"></ul>
   </div>
 
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">10</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">11</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -268,11 +268,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">10</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">11</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">10</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">11</span></footer>
   </div>
 </section>
 
@@ -288,7 +288,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='10';
+const VERSION='11';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -470,7 +470,7 @@ $('pushSw').onclick=()=>{
   })();
 };
 $('copyCode').onclick=async()=>{const t=$('pushCode').value;try{await navigator.clipboard.writeText(t);toast('알림 코드를 복사했어요');}catch(e){$('pushCode').select();toast('코드를 길게 눌러 복사해 주세요');}};
-$('testNoti').onclick=async()=>{if(swReg&&Notification.permission!=='denied'){await mirror();swReg.active&&swReg.active.postMessage({type:'test'});toast('알림을 보냈어요');}};
+$('testNoti').onclick=async()=>{try{const reg=await getReg();await mirror();await reg.showNotification('할수있어 시험 알림',{body:'이 알림이 보이면 폰 알림 설정은 정상이에요.',icon:'icon-192.png'});pushMsg('시험 알림을 띄웠어요. 안 보이면 폰의 삼성 인터넷 알림이 꺼져 있는 거예요.');}catch(e){pushMsg('시험 알림을 띄우지 못했어요: '+(e&&e.message||e),true);}};
 
 /* ---------- 앱을 보고 있을 때 알림 ---------- */
 let actx=null,titleTimer=null;const fired=new Set();const baseTitle=document.title;
