@@ -291,7 +291,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">26</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">27</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -410,7 +410,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
           <div class="row2"><button class="pill" type="button" id="srvSave">연결</button><button class="pill ghost" type="button" id="srvCancel">취소</button></div>
         </div>
         <div id="srvList"></div>
-        <div class="item"><div class="lbl">하루 한 번 자동 백업<small>앱을 열 때 오늘 백업이 없으면 서버에 저장해요</small></div>
+        <div class="item"><div class="lbl">하루 한 번 자동 백업<small id="autoState">앱을 열 때 오늘 백업이 없으면 서버에 저장해요</small></div>
           <button class="switch" id="autoSw" type="button" role="switch" aria-checked="true" aria-label="하루 한 번 자동 백업"></button></div>
         <button class="item btn" type="button" id="doBackup"><span class="lbl">파일로 저장하기<small id="lastBackup">아직 백업한 적이 없어요</small></span><span class="arrow">›</span></button>
         <button class="item btn" type="button" id="doRestore"><span class="lbl">파일로 복구하기<small>다른 폰에서 만든 백업 파일도 돼요</small></span><span class="arrow">›</span></button>
@@ -450,11 +450,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">26</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">27</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">26</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">27</span></footer>
   </div>
 </section>
 
@@ -470,7 +470,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='25';
+const VERSION='27';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -764,18 +764,20 @@ async function srvBackup(silent){
     for(const old of list.slice(KEEP)){await ghApi('/contents/backups/'+encodeURIComponent(old.name),{method:'DELETE',body:JSON.stringify({message:'오래된 백업 정리',sha:old.sha})}).catch(()=>{});}
     srvItems=list.slice(0,KEEP);
     S.lastBackup=now.getTime();S.settings.srvDay=keyOf(now);save();drawSrv();
+    if(silent){S.settings.autoLog={t:now.getTime(),ok:true,name};S.settings.autoNames=[name].concat(S.settings.autoNames||[]).slice(0,10);save();drawSrv();}
     if(!silent)toast('서버에 백업했어요 ('+name+')');}
-  catch(e){if(!silent)toast('백업하지 못했어요: '+e.message);drawSrv(e.message);}
+  catch(e){if(silent){S.settings.autoLog={t:now.getTime(),ok:false,err:String(e.message||e)};save();}if(!silent)toast('백업하지 못했어요: '+e.message);drawSrv(e.message);}
 }
 function drawSrv(err){const g=gh();
   $('srvNow').hidden=!g;$('srvConnBtn').textContent=g?'연결 해제':'연결하기';$('srvConnBtn').className='pill ghost';
   $('srvState').textContent=err?'오류: '+err:(g?g.repo+' · 최근 '+KEEP+'개 보관':'연결 안 됨 · 깃허브 비공개 저장소에 최근 3개 보관');
   $('srvState').className=err?'t-bad':'';
-  $('autoSw').setAttribute('aria-checked',S.settings.autoSrv!==false);$('autoSw').closest('.item').hidden=!g;
+  $('autoSw').setAttribute('aria-checked',S.settings.autoSrv!==false);
+  {const L=S.settings.autoLog,a=$('autoState');if(L){const d=new Date(L.t);const w=(d.getMonth()+1)+'월 '+d.getDate()+'일 ('+'일월화수목금토'[d.getDay()]+') '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');a.textContent=L.ok?'마지막 자동 백업 '+w+' 성공':'마지막 자동 백업 '+w+' 실패 · '+L.err;a.className=L.ok?'':'t-bad';}else{a.textContent='아직 자동 백업 기록이 없어요 · 앱을 열 때 오늘 백업이 없으면 저장해요';a.className='';}}$('autoSw').closest('.item').hidden=!g;
   const el=$('srvList');el.innerHTML='';if(!g)return;
   if(!srvItems.length){el.innerHTML='<div class="sitem"><div class="lbl"><small>서버에 저장된 백업이 아직 없어요</small></div></div>';return;}
   srvItems.forEach(it=>{const d=document.createElement('div');d.className='sitem';
-    d.innerHTML='<div class="lbl"><b>'+esc(it.name)+'</b><small>'+nameDate(it.name)+' 백업</small></div><button type="button" class="rs">복구</button><button type="button" class="dl">삭제</button>';
+    d.innerHTML='<div class="lbl"><b>'+esc(it.name)+'</b><small>'+nameDate(it.name)+((S.settings.autoNames||[]).includes(it.name)?' · 자동 백업':' 백업')+'</small></div><button type="button" class="rs">복구</button><button type="button" class="dl">삭제</button>';
     d.querySelector('.rs').onclick=()=>srvRestore(it);
     const dl=d.querySelector('.dl');dl.onclick=async()=>{
       if(!dl.classList.contains('c')){dl.classList.add('c');dl.textContent='삭제 확인';setTimeout(()=>{dl.classList.remove('c');dl.textContent='삭제';},3000);return;}
