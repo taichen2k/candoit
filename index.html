@@ -42,7 +42,17 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .brand{display:flex;align-items:center;gap:10px}
 .brand img{width:36px;height:36px;border-radius:9px;display:block}
 .brand h1{margin:0;font-size:30px;font-weight:800;line-height:1.1;letter-spacing:-.04em}
-.d1{font-size:13px;color:var(--muted);margin-top:6px}
+.dnav{display:flex;align-items:center;gap:2px;margin-top:6px;margin-left:-8px;flex-wrap:wrap}
+.d1{position:relative;font-size:13px;color:var(--muted);padding:6px 4px;border-radius:8px;cursor:pointer}
+.d1 input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;cursor:pointer}
+.d1.other{color:var(--accent);font-weight:700}
+.dstep{border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;width:32px;height:32px;border-radius:8px}
+.dtoday{border:0;border-radius:999px;background:var(--soft);color:var(--accent);font-weight:700;font-size:12px;padding:5px 10px;margin-left:4px}
+.dc{cursor:pointer;border:0;background:transparent;padding:0;font:inherit}
+.dc.sel .dot{box-shadow:0 0 0 2px var(--ink)}
+.meta.late{color:var(--amber);font-weight:600}
+.chk:disabled{opacity:.35;cursor:not-allowed}
+.viewnote{font-size:13px;color:var(--muted);text-align:center;padding:4px 0}
 .gear{flex:none;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--surface);display:grid;place-items:center;color:var(--muted);position:relative}
 .gear .badge{position:absolute;top:6px;right:6px;width:9px;height:9px;border-radius:50%;background:var(--warn);border:2px solid var(--surface)}
 
@@ -160,7 +170,12 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   <header>
     <div>
       <div class="brand"><img src="icon-192.png" alt=""><h1>할수있어</h1></div>
-      <div class="d1" id="d1"></div>
+      <div class="dnav">
+        <button type="button" class="dstep" id="dPrev" aria-label="전날">‹</button>
+        <label class="d1" for="datePick"><span id="d1"></span><input type="date" id="datePick" aria-label="날짜 고르기"></label>
+        <button type="button" class="dstep" id="dNext" aria-label="다음 날">›</button>
+        <button type="button" class="dtoday" id="dToday" hidden>오늘로</button>
+      </div>
     </div>
     <button class="gear" id="openSet" type="button" aria-label="설정">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
@@ -188,11 +203,12 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <ul class="tasks" id="fixedList"></ul>
   </div>
   <div class="list">
-    <h2>오늘 할 일 <span id="onceCnt"></span></h2>
+    <h2><span id="onceTitle">오늘 할 일</span> <span id="onceCnt"></span></h2>
     <ul class="tasks" id="onceList"></ul>
   </div>
 
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">14</span></footer>
+  <div class="viewnote" id="viewNote" hidden></div>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">15</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -281,11 +297,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">14</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">15</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">14</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">15</span></footer>
   </div>
 </section>
 
@@ -301,7 +317,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='14';
+const VERSION='15';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -325,7 +341,8 @@ async function mirror(){try{const db=await idb();const tx=db.transaction('kv','r
 function save(){try{localStorage.setItem(LS,JSON.stringify({tasks:S.tasks,days:S.days,settings:S.settings,lastBackup:S.lastBackup}))}catch(e){toast('저장 공간이 부족해서 저장하지 못했어요');}mirror();render();}
 
 let today=keyOf(new Date());
-let openId=null,editId=null,newPinned=false;
+let openId=null,editId=null,newPinned=false,view=null;
+const V=()=>view||today;
 
 /* ---------- 계산 ---------- */
 function tasksFor(k){return Object.values(S.tasks).filter(t=>t.fixed?(!t.from||t.from<=k):t.date===k)
@@ -334,13 +351,26 @@ const doneSet=k=>new Set((S.days[k]&&S.days[k].done)||[]);
 const achieved=k=>{const d=S.days[k];return !!(d&&d.total>0&&d.doneCount>=d.total)};
 function dayOffset(n){const d=new Date();d.setHours(12,0,0,0);d.setDate(d.getDate()+n);return d;}
 function streak(){let n=0,i=achieved(today)?0:-1;while(achieved(keyOf(dayOffset(i)))&&n<3000){n++;i--;}return n;}
-function syncToday(){const l=tasksFor(today),ds=doneSet(today);const done=l.filter(t=>ds.has(t.id)).map(t=>t.id);S.days[today]={done,total:l.length,doneCount:done.length};}
+function syncDay(k){const l=tasksFor(k),ds=doneSet(k);const done=l.filter(t=>ds.has(t.id)).map(t=>t.id);S.days[k]={done,total:l.length,doneCount:done.length};}
+function syncToday(){syncDay(today);if(V()!==today)syncDay(V());}
+// 못 끝낸 일회성 할 일은 오늘로 넘긴다 (처음 날짜는 since에 남김)
+function rollover(){let moved=0;Object.values(S.tasks).forEach(t=>{if(!t.fixed&&t.date&&t.date<today&&!doneSet(t.date).has(t.id)){t.since=t.since||t.date;t.date=today;moved++;}});return moved;}
+function keyToDate(k){const [y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d,12);}
+function shift(k,n){const d=keyToDate(k);d.setDate(d.getDate()+n);return keyOf(d);}
+function setView(k){view=(k===today)?null:k;openId=null;editId=null;render();window.scrollTo({top:0,behavior:'smooth'});}
 
 /* ---------- 그리기 ---------- */
 function render(){
-  const now=new Date(),lu=lunar(now);
-  $('d1').textContent=(now.getMonth()+1)+'월 '+now.getDate()+'일 ('+WD[now.getDay()]+')'+(lu?' · '+lu:'');
-  const list=tasksFor(today),ds=doneSet(today);
+  const vk=V(),vd=keyToDate(vk),lu=lunar(vd),isToday=vk===today,isPast=vk<today;
+  $('d1').textContent=(vd.getMonth()+1)+'월 '+vd.getDate()+'일 ('+WD[vd.getDay()]+')'+(lu?' · '+lu:'');
+  $('d1').parentElement.classList.toggle('other',!isToday);$('datePick').value=vk;$('dToday').hidden=isToday;
+  const label=isToday?'오늘':(vd.getMonth()+1)+'월 '+vd.getDate()+'일';
+  $('onceTitle').textContent=isToday?'오늘 할 일':label+' 할 일';
+  $('newTitle').placeholder=isToday?'할 일 추가':label+' 할 일 추가';
+  $('bar').hidden=isPast||!$('settings').hidden;
+  $('viewNote').hidden=isToday;
+  $('viewNote').textContent=isPast?'지난 날짜예요. 체크만 고칠 수 있어요.':'미래 날짜예요. 이날 할 일을 미리 넣어둘 수 있어요.';
+  const list=tasksFor(vk),ds=doneSet(vk);
   const fixed=list.filter(t=>t.fixed),once=list.filter(t=>!t.fixed);
   drawList($('fixedList'),fixed,ds,'fixed');drawList($('onceList'),once,ds,'once');
   $('fixedCnt').textContent=fixed.length?fixed.filter(t=>ds.has(t.id)).length+' / '+fixed.length:'';
@@ -350,7 +380,8 @@ function render(){
   $('goalTxt').textContent='다음까지 '+left+'일 · 목표 123번';
   $('goalBar').style.width=Math.min(j/123*100,100)+'%';
   const wk=$('week');wk.innerHTML='';
-  for(let i=-6;i<=0;i++){const d=dayOffset(i),k=keyOf(d),r=S.days[k];const c=document.createElement('div');c.className='dc'+(i===0?' today':'');
+  for(let i=-6;i<=0;i++){const d=dayOffset(i),k=keyOf(d),r=S.days[k];const c=document.createElement('button');c.type='button';c.className='dc'+(i===0?' today':'')+(k===vk?' sel':'');
+    c.setAttribute('aria-label',(d.getMonth()+1)+'월 '+d.getDate()+'일 보기');c.onclick=()=>setView(k);
     c.innerHTML='<div class="dot '+(achieved(k)?'full':(r&&r.doneCount>0?'part':''))+'">'+d.getDate()+'</div><span>'+(i===0?'오늘':WD[d.getDay()])+'</span>';wk.appendChild(c);}
   // 백업 안내
   const hasData=Object.keys(S.tasks).length>0;
@@ -361,14 +392,17 @@ function render(){
   $('lastBackup').textContent=S.lastBackup?'마지막 백업 '+fmtDate(new Date(S.lastBackup)):'아직 백업한 적이 없어요';
 }
 function fmtDate(d){return d.getFullYear()+'.'+pad(d.getMonth()+1)+'.'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes());}
+function metaOf(t){const a=[];if(t.since&&!t.fixed){const d=keyToDate(t.since);a.push('<span class="meta late">밀린 일 · '+(d.getMonth()+1)+'월 '+d.getDate()+'일부터</span>');}
+  if(t.time)a.push('<span class="meta">'+t.time+'</span>');return a.join(' ');}
 function drawList(ul,items,ds,kind){
   ul.innerHTML='';
   if(!items.length){const li=document.createElement('li');li.className='empty';
     if(kind==='fixed'){li.innerHTML='<span>매일 반복할 루틴은 아래 입력창에 적고 <b>매일 고정</b>을 켠 뒤 추가하세요.</span>';}
-    else li.innerHTML='<span>오늘만 할 일은 여기에 쌓여요.</span>';
+    else li.innerHTML='<span>'+(V()<today?'이날 따로 등록한 할 일이 없어요.':'매일 고정 없이 추가한 할 일은 여기에 쌓여요. 못 끝내면 다음 날로 넘어가요.')+'</span>';
     ul.appendChild(li);return;}
   items.forEach(t=>{const li=document.createElement('li');const done=ds.has(t.id);li.className='task'+(done?' done':'');
-    li.innerHTML='<button class="chk" type="button" aria-label="'+(done?'완료 취소':'완료')+': '+esc(t.title)+'">'+CHECK+'</button><div class="tb"><span class="ttl">'+esc(t.title)+'</span>'+(t.time?'<span class="meta">'+t.time+'</span>':'')+'</div>';
+    li.innerHTML='<button class="chk" type="button" aria-label="'+(done?'완료 취소':'완료')+': '+esc(t.title)+'">'+CHECK+'</button><div class="tb"><span class="ttl">'+esc(t.title)+'</span>'+metaOf(t)+'</div>';
+    if(V()>today)li.querySelector('.chk').disabled=true;
     if(editId===t.id){ul.appendChild(editRow(t));return;}
     li.querySelector('.chk').onclick=()=>toggleDone(t.id);
     if(openId===t.id){const a=document.createElement('div');a.className='acts';
@@ -396,18 +430,22 @@ function editRow(t){
   f.addEventListener('submit',e=>{e.preventDefault();
     const title=li.querySelector('#editTitle').value.trim();if(!title){li.querySelector('#editTitle').focus();return;}
     const n=Object.assign({},t,{title,time:ti.value||''});
-    if(pinned&&!t.fixed){n.fixed=true;n.from=today;delete n.date;}
-    else if(!pinned&&t.fixed){n.fixed=false;n.date=today;}
+    if(pinned&&!t.fixed){n.fixed=true;n.from=V()<today?today:V();delete n.date;delete n.since;}
+    else if(!pinned&&t.fixed){n.fixed=false;n.date=V()<today?today:V();}
     S.tasks[n.id]=n;editId=null;syncToday();save();toast('수정했어요');});
   return li;
 }
 document.addEventListener('click',e=>{if(openId&&!e.target.closest('.acts')&&!e.target.closest('.more')){openId=null;render();}});
 
 /* ---------- 할 일 ---------- */
-function toggleDone(id){const ds=doneSet(today);ds.has(id)?ds.delete(id):ds.add(id);S.days[today]=Object.assign({},S.days[today],{done:[...ds]});syncToday();save();}
+function toggleDone(id,key){const k=key||V();if(k>today)return;const ds=doneSet(k);ds.has(id)?ds.delete(id):ds.add(id);S.days[k]=Object.assign({},S.days[k],{done:[...ds]});syncDay(k);if(k!==today)syncDay(today);save();}
 function removeTask(id){delete S.tasks[id];syncToday();save();}
-function togglePin(t){const n=Object.assign({},t,{fixed:!t.fixed});if(n.fixed){n.from=n.from||today;delete n.date;}else n.date=today;S.tasks[n.id]=n;syncToday();save();}
-function addTask(title,time,fixed){const t={id:uid(),title,time:time||'',fixed,createdAt:Date.now()};if(fixed)t.from=today;else t.date=today;S.tasks[t.id]=t;syncToday();save();}
+function togglePin(t){const n=Object.assign({},t,{fixed:!t.fixed});if(n.fixed){n.from=n.from||V();delete n.date;delete n.since;}else n.date=V();S.tasks[n.id]=n;syncToday();save();}
+function addTask(title,time,fixed){const k=V()<today?today:V();const t={id:uid(),title,time:time||'',fixed,createdAt:Date.now()};if(fixed)t.from=k;else t.date=k;S.tasks[t.id]=t;syncToday();save();if(k!==today){const d=keyToDate(k);toast((d.getMonth()+1)+'월 '+d.getDate()+'일에 추가했어요');}}
+$('dPrev').onclick=()=>setView(shift(V(),-1));
+$('dNext').onclick=()=>setView(shift(V(),1));
+$('dToday').onclick=()=>setView(today);
+$('datePick').addEventListener('change',()=>{const v=$('datePick').value;if(v)setView(v);});
 $('newPin').onclick=()=>{newPinned=!newPinned;$('newPin').setAttribute('aria-pressed',newPinned)};
 function showTime(){const v=$('newTime').value;$('timeLbl').textContent=v?v+' 알림':'알림 시각';$('timeChip').classList.toggle('set',!!v);}
 $('newTime').addEventListener('input',showTime);$('newTime').addEventListener('change',showTime);
@@ -418,7 +456,7 @@ $('addForm').addEventListener('submit',e=>{e.preventDefault();const v=$('newTitl
 for(let h=0;h<=23;h++)['startH','endH'].forEach(id=>{const o=document.createElement('option');o.value=h;o.textContent=pad(h)+'시';$(id).appendChild(o);});
 function openSettings(){$('startH').value=S.settings.start;$('endH').value=S.settings.end;$('soundSw').setAttribute('aria-checked',S.settings.sound!==false);
   $('settings').hidden=false;$('bar').hidden=true;$('main').setAttribute('aria-hidden','true');refreshPush();window.scrollTo(0,0);}
-function closeSettings(){showCode(false);$('settings').hidden=true;$('bar').hidden=false;$('main').removeAttribute('aria-hidden');$('restoreConfirm').hidden=true;$('resetConfirm').hidden=true;}
+function closeSettings(){showCode(false);$('settings').hidden=true;$('bar').hidden=V()<today;$('main').removeAttribute('aria-hidden');$('restoreConfirm').hidden=true;$('resetConfirm').hidden=true;}
 $('openSet').onclick=openSettings;$('closeSet').onclick=closeSettings;
 $('startH').onchange=()=>{S.settings.start=+$('startH').value;save();refreshPush();};
 $('endH').onchange=()=>{S.settings.end=+$('endH').value;save();refreshPush();};
@@ -523,11 +561,11 @@ function fire(head,msg,items){
   chime();$('popHour').textContent=head;$('popTitle').textContent=msg;const pl=$('popList');pl.innerHTML='';pl.hidden=!items.length;
   items.slice(0,6).forEach(t=>{const li=document.createElement('li');li.className='task';
     li.innerHTML='<button class="chk" type="button" aria-label="완료: '+esc(t.title)+'">'+CHECK+'</button><div class="tb"><span class="ttl">'+esc(t.title)+'</span></div>';
-    li.querySelector('.chk').onclick=()=>{toggleDone(t.id);li.classList.toggle('done')};pl.appendChild(li);});
+    li.querySelector('.chk').onclick=()=>{toggleDone(t.id,today);li.classList.toggle('done')};pl.appendChild(li);});
   $('pop').hidden=false;let on=false;clearInterval(titleTimer);titleTimer=setInterval(()=>{document.title=(on=!on)?'⏰ '+head:baseTitle},900);}
 $('popClose').onclick=()=>{$('pop').hidden=true;clearInterval(titleTimer);document.title=baseTitle;};
 function tick(){
-  const now=new Date(),k=keyOf(now);if(k!==today){today=k;syncToday();save();}
+  const now=new Date(),k=keyOf(now);if(k!==today){const prev=today;today=k;if(view===prev)view=null;if(rollover())toast('못 끝낸 일을 오늘로 넘겼어요');syncToday();save();}
   if(document.visibilityState!=='visible')return;
   const h=now.getHours(),m=now.getMinutes(),hm=pad(h)+':'+pad(m),rem=remaining();
   rem.filter(t=>t.time===hm).forEach(t=>{const key=k+t.id+hm;if(!fired.has(key)){fired.add(key);fire(hm,t.title+' 할 시간이에요',[t]);}});
@@ -536,9 +574,9 @@ function tick(){
     if(!fired.has(key)){fired.add(key);rem.length?fire(pad(h)+':00','남은 할 일 '+rem.length+'개',rem):fire(pad(h)+':00','오늘 할 일 모두 끝! 잘했어요',[]);}}
 }
 setInterval(tick,15000);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){load();render();}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){load();const k=keyOf(new Date());if(k!==today){today=k;view=null;}if(rollover()){syncToday();save();}render();}});
 
-load();syncToday();save();
+load();rollover();syncToday();save();
 if(location.hash==='#settings')openSettings();
 })();
 </script>

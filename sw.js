@@ -1,5 +1,5 @@
 /* 할수있어 서비스워커: 홈 화면 설치 + 잠금화면 알림 */
-const CACHE='candoit-v14';
+const CACHE='candoit-v15';
 const SHELL=['./','./index.html','./manifest.webmanifest','./fonts/pretendard.woff2','./icon-192.png','./icon-512.png','./icon-180.png','./badge-96.png','./favicon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -21,7 +21,8 @@ async function summary(hourLabel){
   const st=await readState();const now=new Date(),k=keyOf(now);
   let rem=[];
   if(st){const done=new Set((st.days&&st.days[k]&&st.days[k].done)||[]);
-    rem=Object.values(st.tasks||{}).filter(t=>(t.fixed?(!t.from||t.from<=k):t.date===k)&&!done.has(t.id))
+    const doneOn=d=>new Set((st.days&&st.days[d]&&st.days[d].done)||[]);
+    rem=Object.values(st.tasks||{}).filter(t=>(t.fixed?(!t.from||t.from<=k):(t.date===k||(t.date<k&&!doneOn(t.date).has(t.id))))&&!done.has(t.id))
       .sort((a,b)=>(a.time||'99')<(b.time||'99')?-1:1);}
   const head=hourLabel||pad(now.getHours())+':00';
   if(!st||!Object.keys(st.tasks||{}).length)return {title:head+' 할수있어',body:'오늘 할 일을 등록해 보세요.'};
