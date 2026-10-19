@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex,nofollow">
 <meta name="theme-color" content="#f4f6fa" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0f131b" media="(prefers-color-scheme: dark)">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://api.github.com; worker-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
 <title>할수있어</title>
 <link rel="manifest" href="manifest.webmanifest">
 <script>window.__bip=null;addEventListener("beforeinstallprompt",function(e){e.preventDefault();window.__bip=e;window.dispatchEvent(new Event("bip-ready"));});</script>
@@ -291,7 +292,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">28</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">29</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -450,11 +451,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">28</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">29</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">28</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">29</span></footer>
   </div>
 </section>
 
@@ -470,7 +471,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='28';
+const VERSION='29';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -488,7 +489,27 @@ function lunar(d){try{const p=new Intl.DateTimeFormat('ko-KR-u-ca-dangi',{month:
 /* ---------- 저장: 이 기기(localStorage) + 알림용 사본(IndexedDB) ---------- */
 const LS='candoit.v1';
 const S={tasks:{},days:{},settings:{start:8,end:22,sound:true,push:false},body:{height:null,log:{}},lastBackup:0};
-function load(){try{const j=JSON.parse(localStorage.getItem(LS)||'null');if(j){S.tasks=j.tasks||{};S.days=j.days||{};Object.assign(S.settings,j.settings||{});S.lastBackup=j.lastBackup||0;S.body=Object.assign({height:null,log:{}},j.body||{});}}catch(e){}}
+/* 저장·복구 자료 검사: 모양이 맞는 값만 남김 (조작된 백업 파일로 화면에 코드가 끼어드는 것 방지) */
+const DK=/^\d{4}-\d{2}-\d{2}$/,HM=/^([01]\d|2[0-3]):[0-5]\d$/;
+const numIn=(v,lo,hi)=>{v=typeof v==='string'&&v.trim()!==''?+v:v;return typeof v==='number'&&isFinite(v)&&v>=lo&&v<=hi?v:null;};
+function clean(j){const o={tasks:{},days:{},settings:{},body:{height:null,log:{}},lastBackup:0};if(!j||typeof j!=='object')return o;
+  Object.values(j.tasks&&typeof j.tasks==='object'?j.tasks:{}).forEach(t=>{if(!t||typeof t!=='object'||typeof t.id!=='string'||!/^[\w-]{1,40}$/.test(t.id))return;
+    const n={id:t.id,title:String(t.title==null?'':t.title).slice(0,80),time:HM.test(t.time)?t.time:'',fixed:!!t.fixed,createdAt:numIn(t.createdAt,0,1e14)||0};
+    ['from','date','since'].forEach(k=>{if(DK.test(t[k]))n[k]=t[k];});if(!n.fixed&&!n.date)return;o.tasks[n.id]=n;});
+  Object.entries(j.days&&typeof j.days==='object'?j.days:{}).forEach(([k,d])=>{if(!DK.test(k)||!d||typeof d!=='object')return;
+    o.days[k]={done:Array.isArray(d.done)?d.done.filter(x=>typeof x==='string').slice(0,500):[],total:numIn(d.total,0,1e4)||0,doneCount:numIn(d.doneCount,0,1e4)||0};});
+  const st=j.settings&&typeof j.settings==='object'?j.settings:{};
+  if(numIn(st.start,0,23)!=null)o.settings.start=Math.round(st.start);if(numIn(st.end,0,23)!=null)o.settings.end=Math.round(st.end);
+  ['sound','push','autoSrv'].forEach(k=>{if(typeof st[k]==='boolean')o.settings[k]=st[k];});
+  if(DK.test(st.srvDay))o.settings.srvDay=st.srvDay;
+  if(st.autoLog&&typeof st.autoLog==='object')o.settings.autoLog={t:numIn(st.autoLog.t,0,1e14)||0,ok:!!st.autoLog.ok,name:String(st.autoLog.name||'').slice(0,60),err:String(st.autoLog.err||'').slice(0,200)};
+  if(Array.isArray(st.autoNames))o.settings.autoNames=st.autoNames.filter(x=>typeof x==='string').map(x=>x.slice(0,60)).slice(0,10);
+  const b=j.body&&typeof j.body==='object'?j.body:{};o.body.height=numIn(b.height,50,250);
+  Object.entries(b.log&&typeof b.log==='object'?b.log:{}).forEach(([k,r])=>{if(!DK.test(k)||!r||typeof r!=='object')return;
+    const n={w:numIn(r.w,10,400),s:numIn(r.s,40,300),d:numIn(r.d,20,200)};if(n.s==null||n.d==null){n.s=null;n.d=null;}
+    if(typeof r.t==='string'&&/^[\d:오전후 ]{1,12}$/.test(r.t))n.t=r.t;if(n.w!=null||n.s!=null)o.body.log[k]=n;});
+  o.lastBackup=numIn(j.lastBackup,0,1e14)||0;return o;}
+function load(){try{const j=JSON.parse(localStorage.getItem(LS)||'null');if(j){const c=clean(j);S.tasks=c.tasks;S.days=c.days;Object.assign(S.settings,c.settings);S.lastBackup=c.lastBackup;S.body=c.body;}}catch(e){}}
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('candoit',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function mirror(){try{const db=await idb();const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put({tasks:S.tasks,days:S.days,settings:S.settings},'state');}catch(e){}}
 function save(){try{localStorage.setItem(LS,JSON.stringify({tasks:S.tasks,days:S.days,settings:S.settings,body:S.body,lastBackup:S.lastBackup}))}catch(e){toast('저장 공간이 부족해서 저장하지 못했어요');}mirror();render();}
@@ -825,7 +846,7 @@ $('restoreFile').onchange=async()=>{
   catch(e){toast('할수있어 백업 파일이 아니에요. 파일을 다시 골라주세요.');}
 };
 $('restoreNo').onclick=()=>{pending=null;$('restoreConfirm').hidden=true;};
-$('restoreYes').onclick=()=>{if(!pending)return;S.tasks=pending.tasks;S.days=pending.days;if(pending.body)S.body=Object.assign({height:null,log:{}},pending.body);Object.assign(S.settings,pending.settings||{},{push:S.settings.push});
+$('restoreYes').onclick=()=>{if(!pending)return;pending=Object.assign(clean(pending),{body:pending.body?clean(pending).body:null});S.tasks=pending.tasks;S.days=pending.days;if(pending.body)S.body=Object.assign({height:null,log:{}},pending.body);Object.assign(S.settings,pending.settings||{},{push:S.settings.push});
   pending=null;$('restoreConfirm').hidden=true;syncToday();save();closeSettings();toast('백업에서 복구했어요');};
 
 /* ---------- 잠금화면 알림 (웹 푸시) ---------- */
@@ -956,6 +977,7 @@ setInterval(tick,15000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){load();const k=keyOf(new Date());if(k!==today){today=k;view=null;}if(rollover()){syncToday();save();}render();autoBackup();}});
 
 load();rollover();syncToday();save();autoBackup();
+try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
 if(location.hash==='#settings')openSettings();
 })();
 </script>
