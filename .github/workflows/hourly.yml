@@ -21,4 +21,6 @@ jobs:
         env:
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           PUSH_CODES: ${{ secrets.PUSH_CODES }}
+          BACKUP_READ_TOKEN: ${{ secrets.BACKUP_READ_TOKEN }}
+          BACKUP_REPO: taichen2k/candoit-backup
           FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '1' || '0' }}

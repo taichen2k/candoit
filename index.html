@@ -292,7 +292,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">31</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">32</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -385,7 +385,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
             <p>이 코드를 깃허브 저장소의 <b>PUSH_CODES</b>에 넣어야 잠금화면 알림이 와요. Claude에게 "알림 코드 등록해줘"라고 하면 넣는 화면을 열어드려요.</p>
             <textarea class="codebox" id="pushCode" readonly aria-label="알림 코드"></textarea>
             <div class="row2"><button class="pill" type="button" id="copyCode">알림 코드 복사</button><button class="pill ghost" type="button" id="testNoti">이 폰에서 알림 시험</button></div>
-            <p>알림 시간대를 바꾸면 코드도 바뀌어요. 그때는 새 코드를 다시 넣어주세요.</p>
+            <p>서버 백업에 연결돼 있으면 알림 시간대를 바꾸거나 코드가 바뀌어도 서버에 자동으로 반영돼요. 연결 안 된 폰만 새 코드를 직접 넣어주세요.</p>
           </div>
         </div>
         <div class="item"><div class="lbl">알림 시간대</div>
@@ -468,11 +468,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">31</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">32</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">31</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">32</span></footer>
   </div>
 </section>
 
@@ -488,7 +488,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='31';
+const VERSION='32';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -931,6 +931,17 @@ function pushSupport(){
   return '';
 }
 function pushMsg(t,warn){const m=$('pushMsg');m.textContent=t||'';$('pushMsgWrap').hidden=!t;m.className='status '+(warn?'warn':'ok');}
+/* 알림 코드 자동 등록: 서버 백업(비공개 저장소)의 push/기기번호.json 에 지금 코드를 올려 두면
+   매시 알림 작업이 그 파일을 읽어 보냄 → 시간대를 바꾸거나 코드가 바뀌어도 다시 넣을 필요 없음 */
+async function pushSync(code,endpoint){try{
+  const id=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(endpoint)))).slice(0,8).map(x=>x.toString(16).padStart(2,'0')).join('');
+  const SK='candoit.pushsync';let last={};try{last=JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){}
+  if(last.id===id&&last.code===code)return true;
+  const path='/contents/push/'+id+'.json';const cur=await ghApi(path);
+  const body={app:'할수있어',code,a:S.settings.start,b:S.settings.end,device:/Android/.test(navigator.userAgent)?'Android':/iPhone|iPad/.test(navigator.userAgent)?'iPhone':'PC',updated:new Date().toISOString()};
+  await ghApi(path,{method:'PUT',body:JSON.stringify(Object.assign({message:'알림 설정 '+id,content:b64e(JSON.stringify(body))},cur&&cur.sha?{sha:cur.sha}:{}))});
+  if(last.id&&last.id!==id){const old=await ghApi('/contents/push/'+last.id+'.json').catch(()=>null);if(old&&old.sha)await ghApi('/contents/push/'+last.id+'.json',{method:'DELETE',body:JSON.stringify({message:'예전 알림 설정 정리',sha:old.sha})}).catch(()=>{});}
+  localStorage.setItem(SK,JSON.stringify({id,code,t:Date.now()}));return true;}catch(e){return false;}}
 async function refreshPush(){
   $('installGuide').hidden=!(isIOS&&!standalone);
   const why=pushSupport();
@@ -943,6 +954,7 @@ async function refreshPush(){
   $('pushSw').setAttribute('aria-checked',on);
   $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요');
   $('pushCodePanel').hidden=!on;if(on){const code=codeOf(sub);$('pushCode').value=code;
+    if(gh()&&await pushSync(code,sub.endpoint))try{localStorage.setItem('candoit.regcode',code);}catch(e){}
     let reg='';try{reg=localStorage.getItem('candoit.regcode')||'';}catch(e){}
     if(reg&&reg!==code){let only=false,ra=null;try{const dj=c=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(c.replace(/-/g,'+').replace(/_/g,'/')),x=>x.charCodeAt(0))));const o=dj(reg),n=dj(code);only=o.e===n.e;ra=o;}catch(e){}
       const msg=only?'알림 시간대를 바꿔서 코드가 바뀌었어요. 지금 등록된 코드로는 예전 시간대('+pad(ra.a)+'시~'+pad(ra.b)+'시)에만 알림이 와요. 새 시간대로 받으려면 새 코드를 다시 등록하세요.':'알림 코드가 바뀌었어요. 새 코드를 다시 등록해야 잠금화면 알림이 와요.';
