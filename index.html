@@ -42,12 +42,14 @@ header{display:flex;justify-content:space-between;align-items:center;gap:12px}
 .brand{display:flex;align-items:center;gap:10px}
 .brand img{width:36px;height:36px;border-radius:9px;display:block}
 .brand h1{margin:0;font-size:30px;font-weight:800;line-height:1.1;letter-spacing:-.04em}
-.dnav{display:flex;align-items:center;gap:2px;margin-top:6px;margin-left:-8px;flex-wrap:wrap}
-.d1{position:relative;font-size:13px;color:var(--muted);padding:6px 4px;border-radius:8px;cursor:pointer}
+.dnav{display:flex;align-items:center;gap:2px;margin-top:6px;margin-left:-8px;flex-wrap:nowrap;white-space:nowrap}
+.dlunar{font-size:12px;color:var(--muted);margin:-4px 0 0 26px}
+.d1{position:relative;font-size:14px;font-weight:600;color:var(--ink);padding:6px 4px;border-radius:8px;cursor:pointer}
 .d1 input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;cursor:pointer}
-.d1.other{color:var(--accent);font-weight:700}
-.dstep{border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;width:32px;height:32px;border-radius:8px}
-.dtoday{border:0;border-radius:999px;background:var(--soft);color:var(--accent);font-weight:700;font-size:12px;padding:5px 10px;margin-left:4px}
+.d1 .lu{font-weight:500;color:var(--muted)}
+.dbadge{font-size:12px;font-weight:700;color:var(--accent);background:var(--soft);border-radius:999px;padding:4px 10px;margin-left:4px}
+.dstep{border:0;background:transparent;color:var(--ink);opacity:.55;font-size:20px;line-height:1;width:32px;height:32px;border-radius:8px}
+.dtoday{border:0;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:12px;padding:5px 11px;margin-left:4px}
 .dc{cursor:pointer;border:0;background:transparent;padding:0;font:inherit}
 .dc.sel .dot{box-shadow:0 0 0 2px var(--ink)}
 .meta.late{color:var(--amber);font-weight:600}
@@ -153,6 +155,16 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 .row2 .pill{flex:1}
 .status{font-size:13px;font-weight:600}
 .status.ok{color:var(--good)}.status.warn{color:var(--amber)}
+.srvin{width:100%;border:0;border-radius:12px;background:var(--bg);padding:12px 14px;font-size:15px;outline:none}
+.srvin:focus{box-shadow:inset 0 0 0 2px var(--accent)}
+.sitem{display:flex;align-items:center;gap:8px;padding:12px 16px;border-top:1px solid var(--line)}
+.sitem .lbl{flex:1;min-width:0}
+.sitem .lbl b{display:block;font-size:14px;font-weight:600;overflow-wrap:anywhere}
+.sitem .lbl small{font-size:12px;color:var(--muted)}
+.sitem button{border:0;border-radius:8px;padding:8px 10px;font-size:13px;font-weight:600;background:var(--bg)}
+.sitem .rs{color:var(--accent)}
+.sitem .dl{color:var(--warn)}
+.sitem .dl.c{background:var(--warn);color:#fff}
 .confirm{background:var(--soft);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:10px;font-size:14px}
 
 /* 알림 팝업 (앱을 보고 있을 때) */
@@ -234,8 +246,10 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
         <button type="button" class="dstep" id="dPrev" aria-label="전날">‹</button>
         <label class="d1" for="datePick"><span id="d1"></span><input type="date" id="datePick" aria-label="날짜 고르기"></label>
         <button type="button" class="dstep" id="dNext" aria-label="다음 날">›</button>
-        <button type="button" class="dtoday" id="dToday" hidden>오늘로</button>
+        <span class="dbadge" id="dBadge">오늘</span>
+        <button type="button" class="dtoday" id="dToday" hidden>오늘로 ↩</button>
       </div>
+      <div class="dlunar" id="dLunar"></div>
     </div>
     <button class="gear" id="openSet" type="button" aria-label="설정">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
@@ -277,7 +291,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">16</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">17</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -386,8 +400,20 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>백업 · 복구</h3>
       <div class="card">
-        <button class="item btn" type="button" id="doBackup"><span class="lbl">지금 백업하기<small id="lastBackup">아직 백업한 적이 없어요</small></span><span class="arrow">›</span></button>
-        <button class="item btn" type="button" id="doRestore"><span class="lbl">백업 파일로 복구하기<small>다른 폰에서 만든 백업도 돼요</small></span><span class="arrow">›</span></button>
+        <div class="item"><div class="lbl">서버 백업<small id="srvState">연결 안 됨 · 깃허브 비공개 저장소에 최근 3개 보관</small></div>
+          <button class="pill" type="button" id="srvNow" hidden style="padding:9px 14px;font-size:14px">지금 백업</button>
+          <button class="pill ghost" type="button" id="srvConnBtn" style="padding:9px 14px;font-size:14px">연결하기</button></div>
+        <div class="panel" id="srvConn" hidden>
+          <p>깃허브의 <b>비공개 저장소</b>에 백업을 보관해요. 저장소 이름과 접근 토큰을 넣으면 이 폰에만 저장돼요.</p>
+          <label class="sr" for="srvRepo">저장소</label><input id="srvRepo" class="srvin" type="text" value="taichen2k/candoit-backup" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <label class="sr" for="srvTok">접근 토큰</label><input id="srvTok" class="srvin" type="password" placeholder="github_pat_로 시작하는 토큰" autocomplete="off" autocapitalize="off" spellcheck="false">
+          <div class="row2"><button class="pill" type="button" id="srvSave">연결</button><button class="pill ghost" type="button" id="srvCancel">취소</button></div>
+        </div>
+        <div id="srvList"></div>
+        <div class="item"><div class="lbl">하루 한 번 자동 백업<small>앱을 열 때 오늘 백업이 없으면 서버에 저장해요</small></div>
+          <button class="switch" id="autoSw" type="button" role="switch" aria-checked="true" aria-label="하루 한 번 자동 백업"></button></div>
+        <button class="item btn" type="button" id="doBackup"><span class="lbl">파일로 저장하기<small id="lastBackup">아직 백업한 적이 없어요</small></span><span class="arrow">›</span></button>
+        <button class="item btn" type="button" id="doRestore"><span class="lbl">파일로 복구하기<small>다른 폰에서 만든 백업 파일도 돼요</small></span><span class="arrow">›</span></button>
         <input type="file" id="restoreFile" accept=".json,application/json" hidden>
         <div class="panel" id="restoreConfirm" hidden>
           <div class="confirm">
@@ -415,11 +441,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">16</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">17</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">16</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">17</span></footer>
   </div>
 </section>
 
@@ -435,7 +461,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='16';
+const VERSION='17';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -480,8 +506,8 @@ function setView(k){view=(k===today)?null:k;openId=null;editId=null;render();win
 /* ---------- 그리기 ---------- */
 function render(){
   const vk=V(),vd=keyToDate(vk),lu=lunar(vd),isToday=vk===today,isPast=vk<today;
-  $('d1').textContent=(vd.getMonth()+1)+'월 '+vd.getDate()+'일 ('+WD[vd.getDay()]+')'+(lu?' · '+lu:'');
-  $('d1').parentElement.classList.toggle('other',!isToday);$('datePick').value=vk;$('dToday').hidden=isToday;
+  $('d1').textContent=(vd.getMonth()+1)+'월 '+vd.getDate()+'일 ('+WD[vd.getDay()]+')';$('dLunar').textContent=lu;
+  $('datePick').value=vk;$('dToday').hidden=isToday;$('dBadge').hidden=!isToday;
   const label=isToday?'오늘':(vd.getMonth()+1)+'월 '+vd.getDate()+'일';
   $('onceTitle').textContent=isToday?'오늘 할 일':label+' 할 일';
   $('newTitle').placeholder=isToday?'할 일 추가':label+' 할 일 추가';
@@ -677,7 +703,7 @@ $('addForm').addEventListener('submit',e=>{e.preventDefault();const v=$('newTitl
 
 /* ---------- 설정 화면 ---------- */
 for(let h=0;h<=23;h++)['startH','endH'].forEach(id=>{const o=document.createElement('option');o.value=h;o.textContent=pad(h)+'시';$(id).appendChild(o);});
-function openSettings(){$('startH').value=S.settings.start;$('endH').value=S.settings.end;$('soundSw').setAttribute('aria-checked',S.settings.sound!==false);
+function openSettings(){srvRefresh();$('startH').value=S.settings.start;$('endH').value=S.settings.end;$('soundSw').setAttribute('aria-checked',S.settings.sound!==false);
   $('settings').hidden=false;$('bar').hidden=true;$('main').setAttribute('aria-hidden','true');refreshPush();window.scrollTo(0,0);}
 function closeSettings(){showCode(false);$('settings').hidden=true;$('bar').hidden=V()<today;$('main').removeAttribute('aria-hidden');$('restoreConfirm').hidden=true;$('resetConfirm').hidden=true;}
 $('openSet').onclick=openSettings;$('closeSet').onclick=closeSettings;
@@ -700,7 +726,83 @@ async function backup(){
   if(!ok){const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);}
   S.lastBackup=now.getTime();save();toast(name+' 저장했어요');
 }
-$('doBackup').onclick=backup;$('nudgeBackup').onclick=backup;
+$('doBackup').onclick=backup;
+$('nudgeBackup').onclick=()=>{if(gh())srvBackup(false);else backup();};
+
+/* 서버 백업: 깃허브 비공개 저장소 (토큰은 이 기기에만 저장) */
+const GHK='candoit.gh',KEEP=3;
+function gh(){try{const j=JSON.parse(localStorage.getItem(GHK)||'null');return j&&j.repo&&j.token?j:null;}catch(e){return null;}}
+function ghSet(v){try{v?localStorage.setItem(GHK,JSON.stringify(v)):localStorage.removeItem(GHK);}catch(e){}}
+async function ghApi(path,opt){const g=gh();if(!g)throw new Error('연결 안 됨');
+  const r=await fetch('https://api.github.com/repos/'+g.repo+path,Object.assign({cache:'no-store'},opt||{},{headers:{Authorization:'Bearer '+g.token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'}}));
+  if(r.status===404)return null;
+  if(r.status===401)throw new Error('토큰이 만료됐거나 맞지 않아요');
+  if(r.status===403)throw new Error('토큰 권한이 부족해요 (Contents 읽기·쓰기 필요)');
+  if(!r.ok)throw new Error('서버 오류 '+r.status);
+  return r.status===204?{}:r.json();}
+const b64e=str=>{const b=new TextEncoder().encode(str);let s='';for(let i=0;i<b.length;i+=8192)s+=String.fromCharCode(...b.subarray(i,i+8192));return btoa(s);};
+const b64d=str=>new TextDecoder().decode(Uint8Array.from(atob(str.replace(/\s/g,'')),c=>c.charCodeAt(0)));
+let srvItems=[];
+async function srvListLoad(){const a=await ghApi('/contents/backups');
+  srvItems=(Array.isArray(a)?a:[]).filter(x=>/^할수있어_\d{8}_\d{6}\.json$/.test(x.name)).sort((x,y)=>x.name<y.name?1:-1);return srvItems;}
+function nameDate(n){const m=n.match(/_(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})/);return m?m[1]+'.'+m[2]+'.'+m[3]+' '+m[4]+':'+m[5]:n;}
+async function srvBackup(silent){
+  const now=new Date(),name='할수있어_'+stamp(now)+'.json';
+  const data=JSON.stringify({app:'할수있어',version:VERSION,savedAt:now.toISOString(),tasks:S.tasks,days:S.days,settings:S.settings,body:S.body},null,1);
+  try{if(!silent)toast('서버에 백업하는 중…');
+    await ghApi('/contents/backups/'+encodeURIComponent(name),{method:'PUT',body:JSON.stringify({message:'백업 '+name,content:b64e(data)})});
+    const list=await srvListLoad();
+    for(const old of list.slice(KEEP)){await ghApi('/contents/backups/'+encodeURIComponent(old.name),{method:'DELETE',body:JSON.stringify({message:'오래된 백업 정리',sha:old.sha})}).catch(()=>{});}
+    srvItems=list.slice(0,KEEP);
+    S.lastBackup=now.getTime();S.settings.srvDay=keyOf(now);save();drawSrv();
+    if(!silent)toast('서버에 백업했어요 ('+name+')');}
+  catch(e){if(!silent)toast('백업하지 못했어요: '+e.message);drawSrv(e.message);}
+}
+function drawSrv(err){const g=gh();
+  $('srvNow').hidden=!g;$('srvConnBtn').textContent=g?'연결 해제':'연결하기';$('srvConnBtn').className='pill ghost';
+  $('srvState').textContent=err?'오류: '+err:(g?g.repo+' · 최근 '+KEEP+'개 보관':'연결 안 됨 · 깃허브 비공개 저장소에 최근 3개 보관');
+  $('srvState').className=err?'t-bad':'';
+  $('autoSw').setAttribute('aria-checked',S.settings.autoSrv!==false);$('autoSw').closest('.item').hidden=!g;
+  const el=$('srvList');el.innerHTML='';if(!g)return;
+  if(!srvItems.length){el.innerHTML='<div class="sitem"><div class="lbl"><small>서버에 저장된 백업이 아직 없어요</small></div></div>';return;}
+  srvItems.forEach(it=>{const d=document.createElement('div');d.className='sitem';
+    d.innerHTML='<div class="lbl"><b>'+esc(it.name)+'</b><small>'+nameDate(it.name)+' 백업</small></div><button type="button" class="rs">복구</button><button type="button" class="dl">삭제</button>';
+    d.querySelector('.rs').onclick=()=>srvRestore(it);
+    const dl=d.querySelector('.dl');dl.onclick=async()=>{
+      if(!dl.classList.contains('c')){dl.classList.add('c');dl.textContent='삭제 확인';setTimeout(()=>{dl.classList.remove('c');dl.textContent='삭제';},3000);return;}
+      try{await ghApi('/contents/backups/'+encodeURIComponent(it.name),{method:'DELETE',body:JSON.stringify({message:'백업 삭제 '+it.name,sha:it.sha})});
+        srvItems=srvItems.filter(x=>x!==it);drawSrv();toast('서버 백업을 삭제했어요');}
+      catch(e){toast('삭제하지 못했어요: '+e.message);}};
+    el.appendChild(d);});
+}
+async function srvRestore(it){
+  try{const f=await ghApi('/contents/backups/'+encodeURIComponent(it.name));if(!f||!f.content)throw new Error('파일을 찾지 못했어요');
+    const j=JSON.parse(b64d(f.content));if(!j||typeof j.tasks!=='object'||typeof j.days!=='object')throw new Error('할수있어 백업이 아니에요');
+    pending=j;const n=Object.keys(j.tasks).length,dn=Object.keys(j.days).length,bn=Object.keys((j.body&&j.body.log)||{}).length;
+    $('restoreInfo').innerHTML='<b>'+esc(it.name)+'</b><br>할 일 '+n+'개 · 기록 '+dn+'일치'+(bn?' · 몸 기록 '+bn+'일':'')+' · '+nameDate(it.name)+' 백업';
+    $('restoreConfirm').hidden=false;$('restoreConfirm').scrollIntoView({block:'center',behavior:'smooth'});}
+  catch(e){toast('복구하지 못했어요: '+e.message);}
+}
+async function srvRefresh(){if(!gh()){drawSrv();return;}try{await srvListLoad();drawSrv();}catch(e){drawSrv(e.message);}}
+$('srvConnBtn').onclick=()=>{if(gh()){if($('srvConnBtn').dataset.c!=='1'){$('srvConnBtn').dataset.c='1';$('srvConnBtn').textContent='해제 확인';setTimeout(()=>{$('srvConnBtn').dataset.c='';drawSrv();},3000);return;}
+    $('srvConnBtn').dataset.c='';ghSet(null);srvItems=[];drawSrv();toast('서버 백업 연결을 해제했어요. 서버의 백업은 그대로 있어요');return;}
+  $('srvConn').hidden=false;$('srvTok').focus();};
+$('srvCancel').onclick=()=>{$('srvConn').hidden=true;$('srvTok').value='';};
+$('srvSave').onclick=async()=>{const repo=$('srvRepo').value.trim().replace(/^https:\/\/github\.com\//,'').replace(/\/$/,''),token=$('srvTok').value.trim();
+  if(!/^[\w.-]+\/[\w.-]+$/.test(repo)){toast('저장소는 "아이디/이름" 형식으로 적어주세요');return;}
+  if(!token){toast('접근 토큰을 넣어주세요');return;}
+  ghSet({repo,token});
+  try{const info=await ghApi('');if(!info)throw new Error('저장소를 찾지 못했어요. 이름과 토큰 권한을 확인해 주세요');
+    if(!info.private){ghSet(null);toast('공개 저장소에는 백업할 수 없어요. 비공개 저장소를 써주세요');return;}
+    $('srvConn').hidden=true;$('srvTok').value='';toast('서버 백업에 연결했어요');await srvRefresh();
+    if(!srvItems.length)srvBackup(false);}
+  catch(e){ghSet(null);toast('연결하지 못했어요: '+e.message);}};
+$('srvNow').onclick=()=>srvBackup(false);
+$('autoSw').onclick=()=>{S.settings.autoSrv=!(S.settings.autoSrv!==false);save();drawSrv();};
+function autoBackup(){const g=gh();if(!g||S.settings.autoSrv===false||!navigator.onLine)return;
+  if(S.settings.srvDay===keyOf(new Date()))return;if(!Object.keys(S.tasks).length&&!Object.keys(S.body.log).length)return;
+  setTimeout(()=>srvBackup(true),3000);}
+
 let pending=null;
 $('doRestore').onclick=()=>{$('restoreFile').value='';$('restoreFile').click();};
 $('restoreFile').onchange=async()=>{
@@ -797,9 +899,9 @@ function tick(){
     if(!fired.has(key)){fired.add(key);rem.length?fire(pad(h)+':00','남은 할 일 '+rem.length+'개',rem):fire(pad(h)+':00','오늘 할 일 모두 끝! 잘했어요',[]);}}
 }
 setInterval(tick,15000);
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){load();const k=keyOf(new Date());if(k!==today){today=k;view=null;}if(rollover()){syncToday();save();}render();}});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){load();const k=keyOf(new Date());if(k!==today){today=k;view=null;}if(rollover()){syncToday();save();}render();autoBackup();}});
 
-load();rollover();syncToday();save();
+load();rollover();syncToday();save();autoBackup();
 if(location.hash==='#settings')openSettings();
 })();
 </script>
