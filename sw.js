@@ -1,5 +1,5 @@
 /* 할수있어 서비스워커: 홈 화면 설치 + 잠금화면 알림 */
-const CACHE='candoit-v19';
+const CACHE='candoit-v20';
 const SHELL=['./','./index.html','./manifest.webmanifest','./fonts/pretendard.woff2','./icon-192.png','./icon-512.png','./icon-180.png','./badge-96.png','./favicon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -27,7 +27,15 @@ async function summary(hourLabel){
   const head=hourLabel||pad(now.getHours())+':00';
   if(!st||!Object.keys(st.tasks||{}).length)return {title:head+' 할수있어',body:'오늘 할 일을 등록해 보세요.'};
   if(!rem.length)return {title:head+' 오늘 할 일 모두 끝!',body:'잘했어요. 내일도 이렇게만 가요.'};
-  return {title:head+' 남은 할 일 '+rem.length+'개',body:rem.slice(0,5).map(t=>'· '+(t.time?t.time+' ':'')+t.title).join('\n')+(rem.length>5?'\n외 '+(rem.length-5)+'개':'')};
+  // 놓친 일(시각 지남) → 지금 할 일(시각 없음) 순서, 시각이 아직 안 된 일은 빼고 다음 일정만 알려줌
+  const hm=pad(now.getHours())+':'+pad(now.getMinutes());
+  const missed=rem.filter(t=>t.time&&t.time<=hm),free=rem.filter(t=>!t.time),later=rem.filter(t=>t.time&&t.time>hm);
+  const list=missed.map(t=>'놓침 · '+t.time+' '+t.title).concat(free.map(t=>'· '+t.title));
+  const next=later.length?'다음 일정 '+later[0].time+' '+later[0].title:'';
+  if(!list.length)return {title:head+' 지금 할 일은 없어요',body:next||'잘하고 있어요.'};
+  const title=head+' 지금 할 일 '+(missed.length+free.length)+'개'+(missed.length?' · 놓친 일 '+missed.length+'개':'');
+  const body=list.slice(0,5).join('\n')+(list.length>5?'\n외 '+(list.length-5)+'개':'')+(next?'\n'+next:'');
+  return {title,body};
 }
 async function show(hourLabel){
   const s=await summary(hourLabel);
