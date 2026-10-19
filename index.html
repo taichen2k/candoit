@@ -181,7 +181,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <ul class="tasks" id="onceList"></ul>
   </div>
 
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">8</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">9</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -268,11 +268,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">8</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">9</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">8</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">9</span></footer>
   </div>
 </section>
 
@@ -288,7 +288,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='8';
+const VERSION='9';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -421,7 +421,7 @@ $('restoreYes').onclick=()=>{if(!pending)return;S.tasks=pending.tasks;S.days=pen
 /* ---------- 잠금화면 알림 (웹 푸시) ---------- */
 const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
-let swReg=null;
+let swReg=null,lastSub=null;
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>{swReg=r;refreshPush();}).catch(e=>{console.warn(e)});}
 function b64u(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function keyBytes(s){const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0));}
@@ -439,8 +439,10 @@ async function refreshPush(){
   const why=pushSupport();
   if(why){$('pushState').textContent='지금은 켤 수 없어요 (눌러서 이유 보기)';$('pushSw').setAttribute('aria-checked',false);$('pushCodePanel').hidden=true;return;}
   const reg=await getReg();
-  const sub=reg&&await reg.pushManager.getSubscription().catch(()=>null);
-  const on=!!sub&&Notification.permission==='granted';
+  let sub=reg&&await reg.pushManager.getSubscription().catch(()=>null);
+  if(!sub&&lastSub)sub=lastSub;
+  // 삼성 인터넷 등은 허용 상태를 늦게 알려주므로, 구독이 있고 '차단'만 아니면 켜진 것으로 본다
+  const on=!!sub&&Notification.permission!=='denied';
   $('pushSw').setAttribute('aria-checked',on);
   $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요');
   $('pushCodePanel').hidden=!on;if(on)$('pushCode').value=codeOf(sub);
@@ -457,18 +459,18 @@ $('pushSw').onclick=()=>{
     const reg=await getReg();
     if(!reg){pushMsg('앱을 준비하지 못했어요. 앱을 완전히 닫았다가 다시 열고 눌러주세요.',true);return;}
     const cur=await reg.pushManager.getSubscription().catch(()=>null);
-    if(cur&&Notification.permission==='granted'){await cur.unsubscribe().catch(()=>{});pushMsg('알림을 껐어요');refreshPush();return;}
+    if(cur&&$('pushSw').getAttribute('aria-checked')==='true'){await cur.unsubscribe().catch(()=>{});lastSub=null;pushMsg('알림을 껐어요');refreshPush();return;}
     const perm=await permP;
     if(perm!=='granted'){pushMsg('알림 허용이 필요해요. 허용 창에서 "허용"을 눌러주세요.',true);refreshPush();return;}
     try{if(cur)await cur.unsubscribe().catch(()=>{});
-      await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});
+      lastSub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});
       pushMsg('알림을 켰어요. 바로 아래 "알림 코드 복사"를 눌러주세요.');}
     catch(e){pushMsg('알림을 켜지 못했어요: '+(e&&e.message||e)+' — 화면을 캡처해서 Claude에게 보내주세요.',true);}
     await refreshPush();if(!$('pushCodePanel').hidden)$('copyCode').scrollIntoView({block:'center',behavior:'smooth'});
   })();
 };
 $('copyCode').onclick=async()=>{const t=$('pushCode').value;try{await navigator.clipboard.writeText(t);toast('알림 코드를 복사했어요');}catch(e){$('pushCode').select();toast('코드를 길게 눌러 복사해 주세요');}};
-$('testNoti').onclick=async()=>{if(swReg&&Notification.permission==='granted'){await mirror();swReg.active&&swReg.active.postMessage({type:'test'});toast('알림을 보냈어요');}};
+$('testNoti').onclick=async()=>{if(swReg&&Notification.permission!=='denied'){await mirror();swReg.active&&swReg.active.postMessage({type:'test'});toast('알림을 보냈어요');}};
 
 /* ---------- 앱을 보고 있을 때 알림 ---------- */
 let actx=null,titleTimer=null;const fired=new Set();const baseTitle=document.title;
