@@ -181,7 +181,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <ul class="tasks" id="onceList"></ul>
   </div>
 
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">6</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">7</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -217,6 +217,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
       <div class="card">
         <div class="item"><div class="lbl">매시 정각 알림<small id="pushState">꺼져 있어요</small></div>
           <button class="switch" id="pushSw" type="button" role="switch" aria-checked="false" aria-label="매시 정각 알림"></button></div>
+        <div class="panel" style="padding-top:0"><span class="status" id="pushMsg" hidden></span></div>
         <div class="item"><div class="lbl">알림 시간대</div>
           <span style="display:flex;gap:6px;align-items:center"><label class="sr" for="startH">시작</label><select id="startH"></select>~<label class="sr" for="endH">끝</label><select id="endH"></select></span></div>
         <div class="item"><div class="lbl">앱을 보고 있을 때 소리<small>시각을 정한 할 일도 이때 알려요</small></div>
@@ -267,11 +268,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">6</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">7</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">6</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">7</span></footer>
   </div>
 </section>
 
@@ -287,7 +288,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='6';
+const VERSION='7';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -421,30 +422,50 @@ $('restoreYes').onclick=()=>{if(!pending)return;S.tasks=pending.tasks;S.days=pen
 const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
 let swReg=null;
-if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>{swReg=r;refreshPush();}).catch(()=>{});}
+if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(r=>{swReg=r;refreshPush();}).catch(e=>{console.warn(e)});}
 function b64u(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function keyBytes(s){const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0));}
 function codeOf(sub){const j=sub.toJSON();return b64u(new TextEncoder().encode(JSON.stringify({e:j.endpoint,k:j.keys,a:S.settings.start,b:S.settings.end})));}
+async function getReg(){if(swReg)return swReg;try{swReg=await Promise.race([navigator.serviceWorker.ready,new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),6000))]);}catch(e){swReg=null;}return swReg;}
+function pushSupport(){
+  if(!('serviceWorker' in navigator))return '이 브라우저는 알림을 지원하지 않아요. 갤럭시는 크롬, 아이폰은 사파리로 열어주세요.';
+  if(isIOS&&!standalone)return '아이폰은 홈 화면에 설치한 할수있어 아이콘으로 열어야 알림을 켤 수 있어요. 아래 설치 방법을 따라 해주세요.';
+  if(!('PushManager' in window)||!('Notification' in window))return '이 브라우저는 알림을 지원하지 않아요. 갤럭시는 크롬, 아이폰은 홈 화면 아이콘으로 열어주세요.';
+  return '';
+}
+function pushMsg(t,warn){const m=$('pushMsg');m.textContent=t||'';m.hidden=!t;m.className='status '+(warn?'warn':'ok');}
 async function refreshPush(){
-  const supported='serviceWorker' in navigator&&'PushManager' in window&&'Notification' in window;
   $('installGuide').hidden=!(isIOS&&!standalone);
-  if(!supported){$('pushState').textContent=isIOS&&!standalone?'홈 화면에 설치하면 켤 수 있어요':'이 브라우저는 알림을 지원하지 않아요';$('pushSw').disabled=true;return;}
-  const sub=swReg&&await swReg.pushManager.getSubscription().catch(()=>null);
+  const why=pushSupport();
+  if(why){$('pushState').textContent='지금은 켤 수 없어요 (눌러서 이유 보기)';$('pushSw').setAttribute('aria-checked',false);$('pushCodePanel').hidden=true;return;}
+  const reg=await getReg();
+  const sub=reg&&await reg.pushManager.getSubscription().catch(()=>null);
   const on=!!sub&&Notification.permission==='granted';
   $('pushSw').setAttribute('aria-checked',on);
-  $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요. 폰 설정에서 허용해 주세요':'꺼져 있어요');
+  $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요');
   $('pushCodePanel').hidden=!on;if(on)$('pushCode').value=codeOf(sub);
   S.settings.push=on;mirror();
 }
-$('pushSw').onclick=async()=>{
-  if(!swReg){toast('잠시 후 다시 눌러주세요');return;}
-  const sub=await swReg.pushManager.getSubscription().catch(()=>null);
-  if(sub){await sub.unsubscribe().catch(()=>{});toast('알림을 껐어요');refreshPush();return;}
-  const perm=await Notification.requestPermission();
-  if(perm!=='granted'){toast('알림 허용이 필요해요');refreshPush();return;}
-  try{await swReg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});toast('알림을 켰어요. 알림 코드를 복사해 주세요');}
-  catch(e){toast('알림을 켜지 못했어요. 다시 시도해 주세요');}
-  refreshPush();
+$('pushSw').onclick=()=>{
+  const why=pushSupport();
+  if(why){pushMsg(why,true);return;}
+  if(Notification.permission==='denied'){pushMsg(isIOS?'알림이 차단돼 있어요. 아이폰 설정 → 알림 → 할수있어 → 알림 허용을 켠 뒤 다시 눌러주세요.':'알림이 차단돼 있어요. 주소창 왼쪽 자물쇠(또는 ⋮ → 설정 → 사이트 설정 → 알림)에서 허용한 뒤 다시 눌러주세요.',true);return;}
+  // 아이폰은 버튼을 누른 그 순간에 허용 요청을 해야 창이 뜸 (await 전에 바로 호출)
+  const permP=Notification.permission==='granted'?Promise.resolve('granted'):Notification.requestPermission();
+  pushMsg('알림을 켜는 중이에요…');
+  (async()=>{
+    const reg=await getReg();
+    if(!reg){pushMsg('앱을 준비하지 못했어요. 앱을 완전히 닫았다가 다시 열고 눌러주세요.',true);return;}
+    const cur=await reg.pushManager.getSubscription().catch(()=>null);
+    if(cur&&Notification.permission==='granted'){await cur.unsubscribe().catch(()=>{});pushMsg('알림을 껐어요');refreshPush();return;}
+    const perm=await permP;
+    if(perm!=='granted'){pushMsg('알림 허용이 필요해요. 허용 창에서 "허용"을 눌러주세요.',true);refreshPush();return;}
+    try{if(cur)await cur.unsubscribe().catch(()=>{});
+      await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});
+      pushMsg('알림을 켰어요. 아래 알림 코드를 복사해 주세요.');}
+    catch(e){pushMsg('알림을 켜지 못했어요: '+(e&&e.message||e)+' — 화면을 캡처해서 Claude에게 보내주세요.',true);}
+    refreshPush();
+  })();
 };
 $('copyCode').onclick=async()=>{const t=$('pushCode').value;try{await navigator.clipboard.writeText(t);toast('알림 코드를 복사했어요');}catch(e){$('pushCode').select();toast('코드를 길게 눌러 복사해 주세요');}};
 $('testNoti').onclick=async()=>{if(swReg&&Notification.permission==='granted'){await mirror();swReg.active&&swReg.active.postMessage({type:'test'});toast('알림을 보냈어요');}};
