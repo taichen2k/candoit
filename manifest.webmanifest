@@ -2,7 +2,7 @@
   "name": "할수있어",
   "short_name": "할수있어",
   "description": "매일 루틴과 할 일을 체크하고 매시 정각에 남은 일을 알려주는 앱",
-  "id": "./",
+  "id": "/candoit/",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
