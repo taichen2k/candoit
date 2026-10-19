@@ -291,7 +291,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">17</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">18</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -441,11 +441,14 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">17</span></span></div>
+        <div class="item"><div class="lbl">앱 설치하기<small id="instTxt">홈 화면이나 PC에 앱처럼 설치해요</small></div>
+          <button class="pill" type="button" id="instBtn" style="padding:9px 14px;font-size:14px">설치</button></div>
+        <div class="panel" id="instGuide" hidden></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">18</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">17</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">18</span></footer>
   </div>
 </section>
 
@@ -461,7 +464,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='17';
+const VERSION='18';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -703,7 +706,7 @@ $('addForm').addEventListener('submit',e=>{e.preventDefault();const v=$('newTitl
 
 /* ---------- 설정 화면 ---------- */
 for(let h=0;h<=23;h++)['startH','endH'].forEach(id=>{const o=document.createElement('option');o.value=h;o.textContent=pad(h)+'시';$(id).appendChild(o);});
-function openSettings(){srvRefresh();$('startH').value=S.settings.start;$('endH').value=S.settings.end;$('soundSw').setAttribute('aria-checked',S.settings.sound!==false);
+function openSettings(){srvRefresh();drawInstall();$('startH').value=S.settings.start;$('endH').value=S.settings.end;$('soundSw').setAttribute('aria-checked',S.settings.sound!==false);
   $('settings').hidden=false;$('bar').hidden=true;$('main').setAttribute('aria-hidden','true');refreshPush();window.scrollTo(0,0);}
 function closeSettings(){showCode(false);$('settings').hidden=true;$('bar').hidden=V()<today;$('main').removeAttribute('aria-hidden');$('restoreConfirm').hidden=true;$('resetConfirm').hidden=true;}
 $('openSet').onclick=openSettings;$('closeSet').onclick=closeSettings;
@@ -844,12 +847,18 @@ async function refreshPush(){
   const on=!!sub&&Notification.permission!=='denied';
   $('pushSw').setAttribute('aria-checked',on);
   $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요');
-  $('pushCodePanel').hidden=!on;if(on)$('pushCode').value=codeOf(sub);
+  $('pushCodePanel').hidden=!on;if(on){const code=codeOf(sub);$('pushCode').value=code;
+    let reg='';try{reg=localStorage.getItem('candoit.regcode')||'';}catch(e){}
+    if(reg&&reg!==code){pushMsg('알림 코드가 바뀌었어요. 새 코드를 다시 등록해야 잠금화면 알림이 와요.',true);showCode(true);$('gearBadge').hidden=false;}}
   S.settings.push=on;mirror();
 }
 $('pushSw').onclick=()=>{
   const why=pushSupport();
   if(why){pushMsg(why,true);return;}
+  if($('pushSw').getAttribute('aria-checked')==='true'&&$('pushSw').dataset.c!=='1'){$('pushSw').dataset.c='1';
+    pushMsg('끄면 알림 코드가 바뀌어서 다시 등록해야 해요. 정말 끄려면 한 번 더 누르세요.',true);
+    setTimeout(()=>{$('pushSw').dataset.c='';},4000);return;}
+  $('pushSw').dataset.c='';
   if(Notification.permission==='denied'){pushMsg(isIOS?'알림이 차단돼 있어요. 아이폰 설정 → 알림 → 할수있어 → 알림 허용을 켠 뒤 다시 눌러주세요.':'알림이 차단돼 있어요. 주소창 왼쪽 자물쇠(또는 ⋮ → 설정 → 사이트 설정 → 알림)에서 허용한 뒤 다시 눌러주세요.',true);return;}
   // 아이폰은 버튼을 누른 그 순간에 허용 요청을 해야 창이 뜸 (await 전에 바로 호출)
   const permP=Notification.permission==='granted'?Promise.resolve('granted'):Notification.requestPermission();
@@ -870,8 +879,30 @@ $('pushSw').onclick=()=>{
 };
 function showCode(open){$('pushCodeBody').hidden=!open;$('codeToggle').setAttribute('aria-expanded',open);}
 $('codeToggle').onclick=()=>showCode($('pushCodeBody').hidden);
-$('copyCode').onclick=async()=>{const t=$('pushCode').value;try{await navigator.clipboard.writeText(t);toast('알림 코드를 복사했어요');}catch(e){$('pushCode').select();toast('코드를 길게 눌러 복사해 주세요');}};
+$('copyCode').onclick=async()=>{const t=$('pushCode').value;try{localStorage.setItem('candoit.regcode',t);}catch(e){}try{await navigator.clipboard.writeText(t);toast('알림 코드를 복사했어요');}catch(e){$('pushCode').select();toast('코드를 길게 눌러 복사해 주세요');}};
 $('testNoti').onclick=async()=>{try{const reg=await getReg();await mirror();await reg.showNotification('할수있어 시험 알림',{body:'이 알림이 보이면 폰 알림 설정은 정상이에요.',icon:'icon-192.png'});pushMsg('시험 알림을 띄웠어요. 안 보이면 폰의 삼성 인터넷 알림이 꺼져 있는 거예요.');}catch(e){pushMsg('시험 알림을 띄우지 못했어요: '+(e&&e.message||e),true);}};
+
+/* ---------- 앱 설치 ---------- */
+let instEvt=null;
+const isStandalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEvt=e;drawInstall();});
+window.addEventListener('appinstalled',()=>{instEvt=null;toast('할수있어를 설치했어요');drawInstall();});
+function drawInstall(){
+  const done=isStandalone();
+  $('instBtn').hidden=done;$('instTxt').textContent=done?'앱으로 설치되어 실행 중이에요':(instEvt?'버튼을 누르면 바로 설치돼요':'홈 화면이나 PC에 앱처럼 설치해요');
+}
+$('instBtn').onclick=async()=>{
+  if(instEvt){instEvt.prompt();const r=await instEvt.userChoice.catch(()=>null);instEvt=null;if(r&&r.outcome==='accepted')toast('설치를 시작했어요');drawInstall();return;}
+  const ua=navigator.userAgent,g=$('instGuide');let h='';
+  if(isIOS)h='<p><b>아이폰·아이패드</b>: 사파리 아래쪽 공유 버튼(□↑) → <b>홈 화면에 추가</b>를 누르세요. 아이폰은 이렇게 설치해야 알림도 와요.</p>';
+  else if(/SamsungBrowser/.test(ua))h='<p><b>삼성 인터넷</b>: 아래쪽 메뉴(≡) → <b>현재 페이지 추가</b> → <b>홈 화면</b>을 누르세요.</p>';
+  else if(/Android/.test(ua))h='<p><b>크롬</b>: 오른쪽 위 ⋮ → <b>앱 설치</b> 또는 <b>홈 화면에 추가</b>를 누르세요.</p>';
+  else if(/Edg\//.test(ua))h='<p><b>PC 엣지</b>: 주소창 오른쪽의 <b>앱 설치 아이콘</b>(⊞)을 누르거나, ⋯ → 앱 → <b>이 사이트를 앱으로 설치</b>를 누르세요.</p>';
+  else if(/Chrome\//.test(ua))h='<p><b>PC 크롬</b>: 주소창 오른쪽의 <b>설치 아이콘</b>(⊕)을 누르거나, ⋮ → 전송, 저장, 공유 → <b>페이지를 앱으로 설치</b>를 누르세요.</p>';
+  else h='<p>이 브라우저는 바로 설치를 지원하지 않아요. 폰은 크롬·삼성 인터넷·사파리, PC는 크롬·엣지로 열어주세요.</p>';
+  h+='<p>설치해도 기록은 그대로예요. 다만 폰과 PC는 기록이 따로 저장되니, 옮길 때는 백업·복구를 쓰세요.</p>';
+  g.innerHTML=h;g.hidden=!g.hidden;
+};
 
 /* ---------- 앱을 보고 있을 때 알림 ---------- */
 let actx=null,titleTimer=null;const fired=new Set();const baseTitle=document.title;

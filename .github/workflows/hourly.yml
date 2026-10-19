@@ -1,7 +1,7 @@
 name: 매시 정각 알림
 on:
   schedule:
-    - cron: '57 * * * *'   # 매시 57분(한국 시간 기준 정각 직전)에 실행
+    - cron: '35 * * * *'   # 깃허브 예약 실행이 20~40분 늦게 도는 것을 감안해 35분에 걸어 정각 즈음 도착하게 함
   workflow_dispatch:
     inputs:
       force:
