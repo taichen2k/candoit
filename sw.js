@@ -1,5 +1,5 @@
 /* 할수있어 서비스워커: 홈 화면 설치 + 잠금화면 알림 */
-const CACHE='candoit-v33';
+const CACHE='candoit-v34';
 const SHELL=['./','./index.html','./manifest.webmanifest','./fonts/pretendard.woff2','./icon-192.png','./icon-512.png','./icon-180.png','./badge-96.png','./favicon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -33,7 +33,8 @@ async function summary(hourLabel){
   const missed=rem.filter(t=>t.time&&t.time<=hm),free=rem.filter(t=>!t.time),later=rem.filter(t=>t.time&&t.time>hm);
   // 시각은 폰이 알림 옆에 표시하므로 제목에서 빼고 한 줄로 짧게
   const list=missed.map(t=>'놓침  '+t.time+'  '+t.title).concat(free.map(t=>'할 일  '+t.title));
-  const next=later.length?'다음  '+later[0].time+'  '+later[0].title:'';
+  // 앞으로 남은 시각 정한 일은 가까운 순서로 3개까지 보여줌
+  const next=later.slice(0,3).map(t=>'다음  '+t.time+'  '+t.title).join('\n')+(later.length>3?'\n다음 일정 외 '+(later.length-3)+'개':'');
   if(!list.length)return {title:T,body:'지금 할 일은 없어요.'+(next?'\n'+next:'')};
   const n=missed.length+free.length;
   const title=T,head2=(missed.length?'놓친 일 '+missed.length+'개 · ':'')+'할 일 '+n+'개 남았어요.';
