@@ -33,7 +33,7 @@ const hour = force ? new Date(Date.now() + 9 * 3600e3).getUTCHours() : kst.getUT
 
 const parse = c => { try { const s = JSON.parse(Buffer.from(c.replace(/-/g, '+').replace(/_/g, '/'), 'base64').toString('utf8')); return s && s.e ? s : null; } catch (e) { return null; } };
 (async () => {
-  let sent = 0;
+  let sent = 0, outside = 0; const fails = [];
   // 같은 기기(같은 알림 주소)는 한 번만: 자동 등록된 최신 코드가 직접 넣은 코드보다 우선
   const auto = await autoCodes(), byE = new Map();
   for (const c of manual) { const s = parse(c); if (s) byE.set(s.e, s); else console.log('알림 코드 하나를 읽지 못했어요. 다시 복사해 붙여넣어 주세요.'); }
@@ -42,11 +42,12 @@ const parse = c => { try { const s = JSON.parse(Buffer.from(c.replace(/-/g, '+')
   if (!byE.size) { console.log('등록된 알림 코드가 없어요. 건너뜁니다.'); return; }
   for (const s of byE.values()) {
     const a = s.a ?? 8, b = s.b ?? 22;
-    if (!force && (hour < a || hour > b)) { console.log(hour + '시는 알림 시간대(' + a + '~' + b + '시)가 아니에요.'); continue; }
+    if (!force && (hour < a || hour > b)) { outside++; console.log(hour + '시는 알림 시간대(' + a + '~' + b + '시)가 아니에요.'); continue; }
     try {
       await webpush.sendNotification({ endpoint: s.e, keys: s.k }, JSON.stringify({ h: hour }), { TTL: 1800, urgency: 'high' });
       sent++;
     } catch (e) {
+      fails.push(e.statusCode || '연결 오류');
       // 실행 기록은 공개라서 코드·주소·응답 내용은 남기지 않고 상태 번호만 적음
       console.log('보내기 실패(' + (e.statusCode || '연결 오류') + '): ' + (e.statusCode === 404 || e.statusCode === 410 ? '이 기기의 알림이 꺼졌어요. 폰에서 알림을 다시 켜고 새 코드를 등록하세요.' : '잠시 뒤 다시 시도돼요.'));
     }
