@@ -292,7 +292,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">32</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">33</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -380,13 +380,8 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
         <div class="panel" id="pushLastWrap" style="padding-top:0" hidden><span id="pushLast" style="font-size:13px"></span></div>
         <div class="panel" id="pushMsgWrap" style="padding-top:0" hidden><span class="status" id="pushMsg"></span></div>
         <div id="pushCodePanel" hidden>
-          <button class="item btn" type="button" id="codeToggle" aria-expanded="false" aria-controls="pushCodeBody"><span class="lbl">알림 코드 · 알림 시험<small>폰을 바꾸거나 시간대를 바꿨을 때만 필요해요</small></span><span class="arrow" id="codeArrow">›</span></button>
-          <div class="panel" id="pushCodeBody" hidden>
-            <p>이 코드를 깃허브 저장소의 <b>PUSH_CODES</b>에 넣어야 잠금화면 알림이 와요. Claude에게 "알림 코드 등록해줘"라고 하면 넣는 화면을 열어드려요.</p>
-            <textarea class="codebox" id="pushCode" readonly aria-label="알림 코드"></textarea>
-            <div class="row2"><button class="pill" type="button" id="copyCode">알림 코드 복사</button><button class="pill ghost" type="button" id="testNoti">이 폰에서 알림 시험</button></div>
-            <p>서버 백업에 연결돼 있으면 알림 시간대를 바꾸거나 코드가 바뀌어도 서버에 자동으로 반영돼요. 연결 안 된 폰만 새 코드를 직접 넣어주세요.</p>
-          </div>
+          <div class="item"><div class="lbl">서버 자동 등록<small id="regState">확인 중…</small></div>
+            <button class="pill ghost" type="button" id="testNoti" style="padding:9px 14px;font-size:14px">알림 시험</button></div>
         </div>
         <div class="item"><div class="lbl">알림 시간대</div>
           <span style="display:flex;gap:6px;align-items:center"><label class="sr" for="startH">시작</label><select id="startH"></select>~<label class="sr" for="endH">끝</label><select id="endH"></select></span></div>
@@ -468,11 +463,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">32</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">33</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">32</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">33</span></footer>
   </div>
 </section>
 
@@ -488,7 +483,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='32';
+const VERSION='33';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -752,7 +747,7 @@ $('addForm').addEventListener('submit',e=>{e.preventDefault();const v=$('newTitl
 for(let h=0;h<=23;h++)['startH','endH'].forEach(id=>{const o=document.createElement('option');o.value=h;o.textContent=pad(h)+'시';$(id).appendChild(o);});
 function openSettings(){srvRefresh();drawInstall();$('startH').value=S.settings.start;$('endH').value=S.settings.end;$('soundSw').setAttribute('aria-checked',S.settings.sound!==false);
   $('settings').hidden=false;$('bar').hidden=true;$('main').setAttribute('aria-hidden','true');refreshPush();window.scrollTo(0,0);}
-function closeSettings(){showCode(false);$('settings').hidden=true;$('bar').hidden=V()<today;$('main').removeAttribute('aria-hidden');$('restoreConfirm').hidden=true;$('resetConfirm').hidden=true;}
+function closeSettings(){$('settings').hidden=true;$('bar').hidden=V()<today;$('main').removeAttribute('aria-hidden');$('restoreConfirm').hidden=true;$('resetConfirm').hidden=true;}
 $('openSet').onclick=openSettings;$('closeSet').onclick=closeSettings;
 $('startH').onchange=()=>{S.settings.start=+$('startH').value;save();refreshPush();};
 $('endH').onchange=()=>{S.settings.end=+$('endH').value;save();refreshPush();};
@@ -881,7 +876,7 @@ async function srvRestore(it){
 }
 async function srvRefresh(){if(!gh()){drawSrv();return;}try{await srvListLoad();drawSrv();}catch(e){drawSrv(e.message);}}
 $('srvConnBtn').onclick=()=>{if(gh()){if($('srvConnBtn').dataset.c!=='1'){$('srvConnBtn').dataset.c='1';$('srvConnBtn').textContent='해제 확인';setTimeout(()=>{$('srvConnBtn').dataset.c='';drawSrv();},3000);return;}
-    $('srvConnBtn').dataset.c='';ghSet(null);srvItems=[];drawSrv();toast('서버 백업 연결을 해제했어요. 서버의 백업은 그대로 있어요');return;}
+    $('srvConnBtn').dataset.c='';ghSet(null);srvItems=[];drawSrv();toast('서버 백업 연결을 해제했어요. 잠금화면 알림 자동 등록도 멈춰요');return;}
   $('srvConn').hidden=false;$('srvTok').focus();};
 $('srvCancel').onclick=()=>{$('srvConn').hidden=true;$('srvTok').value='';};
 $('srvSave').onclick=async()=>{const repo=$('srvRepo').value.trim().replace(/^https:\/\/github\.com\//,'').replace(/\/$/,''),token=$('srvTok').value.trim();
@@ -953,26 +948,24 @@ async function refreshPush(){
   const on=!!sub&&Notification.permission!=='denied';
   $('pushSw').setAttribute('aria-checked',on);
   $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요');
-  $('pushCodePanel').hidden=!on;if(on){const code=codeOf(sub);$('pushCode').value=code;
-    if(gh()&&await pushSync(code,sub.endpoint))try{localStorage.setItem('candoit.regcode',code);}catch(e){}
-    let reg='';try{reg=localStorage.getItem('candoit.regcode')||'';}catch(e){}
-    if(reg&&reg!==code){let only=false,ra=null;try{const dj=c=>JSON.parse(new TextDecoder().decode(Uint8Array.from(atob(c.replace(/-/g,'+').replace(/_/g,'/')),x=>x.charCodeAt(0))));const o=dj(reg),n=dj(code);only=o.e===n.e;ra=o;}catch(e){}
-      const msg=only?'알림 시간대를 바꿔서 코드가 바뀌었어요. 지금 등록된 코드로는 예전 시간대('+pad(ra.a)+'시~'+pad(ra.b)+'시)에만 알림이 와요. 새 시간대로 받으려면 새 코드를 다시 등록하세요.':'알림 코드가 바뀌었어요. 새 코드를 다시 등록해야 잠금화면 알림이 와요.';
-      if(!window.__codeWarned&&!only){window.__codeWarned=1;toast('알림 코드가 바뀌었어요. 설정에서 새 코드를 등록해 주세요');}pushMsg(msg,true);showCode(true);$('gearBadge').hidden=false;}}
+  $('pushCodePanel').hidden=!on;
+  if(on){const rs=$('regState');
+    if(!gh()){rs.textContent='서버 백업에 연결해야 잠금화면 알림이 와요 (아래 백업·복구 → 서버 백업 연결)';rs.className='t-bad';$('gearBadge').hidden=false;}
+    else{const ok=await pushSync(codeOf(sub),sub.endpoint);rs.textContent=ok?'자동 등록됨 · 시간대를 바꾸면 다음 정각부터 바로 반영돼요':'등록하지 못했어요. 인터넷 연결을 확인하고 다시 열어주세요';rs.className=ok?'t-ok':'t-bad';if(!ok)$('gearBadge').hidden=false;}}
   S.settings.push=on;mirror();
   let lp=null;try{lp=await kvGet('lastPush');}catch(e){}
   const w=$('pushLast');$('pushLastWrap').hidden=!on;
   if(on){const now=new Date(),h=now.getHours(),st=S.settings.start,en=S.settings.end;
     if(!lp){w.textContent='아직 받은 정각 알림이 없어요';w.className='';}
     else{const d=new Date(lp),late=h>=st+2&&h<=en+1&&Date.now()-lp>2*3600e3+10*60e3;
-      w.textContent=(late?'⚠ 최근 2시간 넘게 정각 알림이 안 왔어요 (마지막 ':'마지막 정각 알림 받음 ')+(d.getMonth()+1)+'/'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())+(late?'). cron-job.org가 멈췄거나 알림 코드가 바뀌었을 수 있어요.':'');
+      w.textContent=(late?'⚠ 최근 2시간 넘게 정각 알림이 안 왔어요 (마지막 ':'마지막 정각 알림 받음 ')+(d.getMonth()+1)+'/'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())+(late?'). cron-job.org가 멈췄을 수 있어요.':'');
       w.className=late?'t-bad':'';if(late)$('gearBadge').hidden=false;}}
 }
 $('pushSw').onclick=()=>{
   const why=pushSupport();
   if(why){pushMsg(why,true);return;}
   if($('pushSw').getAttribute('aria-checked')==='true'&&$('pushSw').dataset.c!=='1'){$('pushSw').dataset.c='1';
-    pushMsg('끄면 알림 코드가 바뀌어서 다시 등록해야 해요. 정말 끄려면 한 번 더 누르세요.',true);
+    pushMsg('끄면 잠금화면 알림이 멈춰요. 정말 끄려면 한 번 더 누르세요.',true);
     setTimeout(()=>{$('pushSw').dataset.c='';},4000);return;}
   $('pushSw').dataset.c='';
   if(Notification.permission==='denied'){pushMsg(isIOS?'알림이 차단돼 있어요. 아이폰 설정 → 알림 → 할수있어 → 알림 허용을 켠 뒤 다시 눌러주세요.':'알림이 차단돼 있어요. 주소창 왼쪽 자물쇠(또는 ⋮ → 설정 → 사이트 설정 → 알림)에서 허용한 뒤 다시 눌러주세요.',true);return;}
@@ -988,14 +981,11 @@ $('pushSw').onclick=()=>{
     if(perm!=='granted'){pushMsg('알림 허용이 필요해요. 허용 창에서 "허용"을 눌러주세요.',true);refreshPush();return;}
     try{// 이미 있는 구독은 그대로 써야 알림 코드가 바뀌지 않음
       lastSub=cur||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});
-      pushMsg('알림을 켰어요. 처음이라면 아래 알림 코드를 복사해서 등록해 주세요.');showCode(true);}
+      pushMsg('알림을 켰어요.');}
     catch(e){pushMsg('알림을 켜지 못했어요: '+(e&&e.message||e)+' — 화면을 캡처해서 Claude에게 보내주세요.',true);}
-    await refreshPush();if(!$('pushCodeBody').hidden)$('copyCode').scrollIntoView({block:'center',behavior:'smooth'});
+    await refreshPush();
   })();
 };
-function showCode(open){$('pushCodeBody').hidden=!open;$('codeToggle').setAttribute('aria-expanded',open);}
-$('codeToggle').onclick=()=>showCode($('pushCodeBody').hidden);
-$('copyCode').onclick=async()=>{const t=$('pushCode').value;try{localStorage.setItem('candoit.regcode',t);}catch(e){}try{await navigator.clipboard.writeText(t);toast('알림 코드를 복사했어요');}catch(e){$('pushCode').select();toast('코드를 길게 눌러 복사해 주세요');}};
 $('testNoti').onclick=async()=>{try{const reg=await getReg();await mirror();await reg.showNotification('할수있어 시험 알림',{body:'이 알림이 보이면 폰 알림 설정은 정상이에요.',badge:'badge-96.png'});pushMsg('시험 알림을 띄웠어요. 안 보이면 폰의 삼성 인터넷 알림이 꺼져 있는 거예요.');}catch(e){pushMsg('시험 알림을 띄우지 못했어요: '+(e&&e.message||e),true);}};
 
 /* ---------- 앱 설치 ---------- */
