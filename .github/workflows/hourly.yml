@@ -1,12 +1,16 @@
 name: 매시 정각 알림
 on:
-  # 깃허브 자체 예약 실행은 시각이 들쑥날쑥해서 껐음 (2026-10-19). 외부 타이머(cron-job.org)가 매시 00분에 직접 실행시킴
+  # 깃허브 자체 예약 실행은 시각이 들쑥날쑥해서 껐음 (2026-10-19). 외부 타이머(cron-job.org)가 10분마다(09,19,…,59분) 직접 실행시킴
   workflow_dispatch:
     inputs:
       force:
         description: '시간대와 상관없이 지금 바로 보내기 (시험용)'
         type: boolean
         default: false
+      test_at:
+        description: '시각 맞춤 알림 시험 (예: 18:00 — 그 시각 할 일로 지금 바로 보냄)'
+        type: string
+        default: ''
 jobs:
   send:
     runs-on: ubuntu-latest
@@ -23,4 +27,5 @@ jobs:
           PUSH_CODES: ${{ secrets.PUSH_CODES }}
           BACKUP_READ_TOKEN: ${{ secrets.BACKUP_READ_TOKEN }}
           BACKUP_REPO: taichen2k/candoit-backup
+          TEST_AT: ${{ github.event_name == 'workflow_dispatch' && inputs.test_at || '' }}
           FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '1' || '0' }}

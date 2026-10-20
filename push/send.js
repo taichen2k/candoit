@@ -9,6 +9,7 @@ const PUBLIC = 'BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZ
 const priv = process.env.VAPID_PRIVATE_KEY;
 const manual = (process.env.PUSH_CODES || '').split(/\s+/).filter(Boolean);
 const force = process.env.FORCE === '1';
+const testAt = /^\d\d:\d\d$/.test(process.env.TEST_AT || '') ? process.env.TEST_AT : '';
 if (!priv) { console.log('VAPID_PRIVATE_KEY가 아직 없어요. 건너뜁니다.'); process.exit(0); }
 webpush.setVapidDetails('mailto:noreply@candoit.app', PUBLIC, priv);
 
@@ -71,7 +72,8 @@ const sleep = ms => new Promise(r => setTimeout(r, Math.max(0, ms)));
   const B = force ? now : Math.ceil((now - 5 * MIN) / BLOCK) * BLOCK;
   const events = [];
   if (force || B % (60 * MIN) === 0) events.push({ t: B, kind: 'hour' });
-  if (!force) for (const [e, d] of byE) for (const a of alarmsIn(d.plan, B, B + BLOCK)) events.push({ t: a.t, kind: 'at', hm: a.hm, e });
+  if (testAt) { events.length = 0; for (const e of byE.keys()) events.push({ t: now, kind: 'at', hm: testAt, e }); }
+  if (!force && !testAt) for (const [e, d] of byE) for (const a of alarmsIn(d.plan, B, B + BLOCK)) events.push({ t: a.t, kind: 'at', hm: a.hm, e });
   events.sort((x, y) => x.t - y.t);
 
   let sent = 0, outside = 0, atSent = 0; const fails = [];
