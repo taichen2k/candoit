@@ -1,5 +1,5 @@
 /* 할수있어 서비스워커: 홈 화면 설치 + 잠금화면 알림 */
-const CACHE='candoit-v35';
+const CACHE='candoit-v36';
 const SHELL=['./','./index.html','./manifest.webmanifest','./fonts/pretendard.woff2','./icon-192.png','./icon-512.png','./icon-180.png','./badge-96.png','./favicon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -50,7 +50,17 @@ function fallback(){return self.registration.showNotification('✅ 할 일 알�
 // 정각 알림을 받은 시각을 남겨, 앱 설정에서 알림이 끊겼는지 알 수 있게 함
 function markPush(){return new Promise(res=>{try{const r=indexedDB.open('candoit',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');
   r.onsuccess=()=>{try{const tx=r.result.transaction('kv','readwrite');tx.objectStore('kv').put(Date.now(),'lastPush');tx.oncomplete=()=>res();tx.onerror=()=>res();}catch(e){res()}};r.onerror=()=>res();}catch(e){res()}});}
+// 시각 맞춤 알림: 그 시각(HH:MM)에 할 일을 이 기기 기록에서 찾아 이름과 함께 알림
+async function showAt(hm){
+  const st=await readState(),k=keyOf(new Date());
+  const ds=new Set((st&&st.days&&st.days[k]&&st.days[k].done)||[]);
+  const all=Object.values((st&&st.tasks)||{}).filter(t=>t.time===hm&&(t.fixed?(!t.from||t.from<=k):t.date===k));
+  const left=all.filter(t=>!ds.has(t.id));
+  if(!left.length)return self.registration.showNotification('⏰ '+hm+' 할 일',{body:all.length?'이 시각 할 일은 이미 끝냈어요. 잘했어요!':'이 시각에 남은 할 일이 없어요.',badge:'badge-96.png',tag:'candoit-at-'+hm,silent:true,data:{url:'./'}});
+  return self.registration.showNotification('⏰ '+hm+' '+left[0].title,{body:(left.length>1?left.map(t=>'· '+t.title).join('\n')+'\n':'')+'지금 할 시간이에요.',badge:'badge-96.png',tag:'candoit-at-'+hm,renotify:true,requireInteraction:true,data:{url:'./'}});
+}
 self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch(x){}
+  if(d.at&&/^\d\d:\d\d$/.test(d.at)){e.waitUntil(Promise.all([showAt(d.at).catch(fallback),markPush()]));return;}
   e.waitUntil(Promise.all([show(d.h!=null?pad(d.h)+':00':null).catch(fallback),markPush()]));});
 self.addEventListener('message',e=>{if(e.data&&e.data.type==='test')e.waitUntil(show().catch(fallback));});
 self.addEventListener('notificationclick',e=>{e.notification.close();

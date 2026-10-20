@@ -292,7 +292,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">35</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">36</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -463,11 +463,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">35</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">36</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">35</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">36</span></footer>
   </div>
 </section>
 
@@ -483,7 +483,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='35';
+const VERSION='36';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -524,7 +524,7 @@ function clean(j){const o={tasks:{},days:{},settings:{},body:{height:null,log:{}
 function load(){try{const j=JSON.parse(localStorage.getItem(LS)||'null');if(j){const c=clean(j);S.tasks=c.tasks;S.days=c.days;Object.assign(S.settings,c.settings);S.lastBackup=c.lastBackup;S.body=c.body;}}catch(e){}}
 function idb(){return new Promise((res,rej)=>{const r=indexedDB.open('candoit',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function mirror(){try{const db=await idb();const tx=db.transaction('kv','readwrite');tx.objectStore('kv').put({tasks:S.tasks,days:S.days,settings:S.settings},'state');}catch(e){}}
-function save(){try{localStorage.setItem(LS,JSON.stringify({tasks:S.tasks,days:S.days,settings:S.settings,body:S.body,lastBackup:S.lastBackup}))}catch(e){toast('저장 공간이 부족해서 저장하지 못했어요');}mirror();render();}
+function save(){try{localStorage.setItem(LS,JSON.stringify({tasks:S.tasks,days:S.days,settings:S.settings,body:S.body,lastBackup:S.lastBackup}))}catch(e){toast('저장 공간이 부족해서 저장하지 못했어요');}mirror();render();scheduleAlarmSync();}
 
 let today=keyOf(new Date());
 let openId=null,editId=null,newPinned=false,view=null;
@@ -928,15 +928,26 @@ function pushSupport(){
 function pushMsg(t,warn){const m=$('pushMsg');m.textContent=t||'';$('pushMsgWrap').hidden=!t;m.className='status '+(warn?'warn':'ok');}
 /* 알림 코드 자동 등록: 서버 백업(비공개 저장소)의 push/기기번호.json 에 지금 코드를 올려 두면
    매시 알림 작업이 그 파일을 읽어 보냄 → 시간대를 바꾸거나 코드가 바뀌어도 다시 넣을 필요 없음 */
-async function pushSync(code,endpoint){try{
+/* 시각 맞춤 알림 계획: 할 일 이름은 올리지 않고 시각만 (매일 고정 / 날짜 지정 / 오늘 이미 끝낸 시각) */
+function alarmPlan(){const ts=Object.values(S.tasks).filter(t=>t.time);
+  const daily={};ts.filter(t=>t.fixed).forEach(t=>{const f=t.from||'';if(!(t.time in daily)||f<daily[t.time])daily[t.time]=f;});
+  const once=[...new Set(ts.filter(t=>!t.fixed&&t.date>=today).map(t=>t.date+' '+t.time))].sort();
+  const ds=doneSet(today),todays=tasksFor(today).filter(t=>t.time),done=[...new Set(todays.map(t=>t.time))].filter(hm=>todays.filter(t=>t.time===hm).every(t=>ds.has(t.id)));
+  return {tz:-new Date().getTimezoneOffset(),daily:Object.entries(daily).map(([hm,from])=>({hm,from})).sort((a,b)=>a.hm<b.hm?-1:1),once,done:{[today]:done}};}
+let syncChain=Promise.resolve(true);
+function pushSync(code,endpoint){return syncChain=syncChain.then(()=>pushSync1(code,endpoint),()=>pushSync1(code,endpoint));}
+let alarmTimer=null;
+function scheduleAlarmSync(){clearTimeout(alarmTimer);alarmTimer=setTimeout(async()=>{try{if(!gh()||!('serviceWorker' in navigator))return;const reg=await getReg();const sub=reg&&await reg.pushManager.getSubscription();if(sub)pushSync(codeOf(sub),sub.endpoint);}catch(e){}},2500);}
+async function pushSync1(code,endpoint){try{
   const id=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(endpoint)))).slice(0,8).map(x=>x.toString(16).padStart(2,'0')).join('');
   const SK='candoit.pushsync';let last={};try{last=JSON.parse(localStorage.getItem(SK)||'{}');}catch(e){}
-  if(last.id===id&&last.code===code)return true;
+  const alarms=alarmPlan(),ak=JSON.stringify(alarms);
+  if(last.id===id&&last.code===code&&last.ak===ak)return true;
   const path='/contents/push/'+id+'.json';const cur=await ghApi(path);
-  const body={app:'할수있어',code,a:S.settings.start,b:S.settings.end,device:/Android/.test(navigator.userAgent)?'Android':/iPhone|iPad/.test(navigator.userAgent)?'iPhone':'PC',updated:new Date().toISOString()};
+  const body={app:'할수있어',code,alarms,a:S.settings.start,b:S.settings.end,device:/Android/.test(navigator.userAgent)?'Android':/iPhone|iPad/.test(navigator.userAgent)?'iPhone':'PC',updated:new Date().toISOString()};
   await ghApi(path,{method:'PUT',body:JSON.stringify(Object.assign({message:'알림 설정 '+id,content:b64e(JSON.stringify(body))},cur&&cur.sha?{sha:cur.sha}:{}))});
   if(last.id&&last.id!==id){const old=await ghApi('/contents/push/'+last.id+'.json').catch(()=>null);if(old&&old.sha)await ghApi('/contents/push/'+last.id+'.json',{method:'DELETE',body:JSON.stringify({message:'예전 알림 설정 정리',sha:old.sha})}).catch(()=>{});}
-  localStorage.setItem(SK,JSON.stringify({id,code,t:Date.now()}));return true;}catch(e){return false;}}
+  localStorage.setItem(SK,JSON.stringify({id,code,ak,t:Date.now()}));return true;}catch(e){return false;}}
 async function refreshPush(){
   $('installGuide').hidden=!(isIOS&&!standalone);
   const why=pushSupport();
@@ -951,7 +962,7 @@ async function refreshPush(){
   $('pushCodePanel').hidden=!on;
   if(on){const rs=$('regState');
     if(!gh()){rs.textContent='서버 백업에 연결해야 잠금화면 알림이 와요 (아래 백업·복구 → 서버 백업 연결)';rs.className='t-bad';$('gearBadge').hidden=false;}
-    else{const ok=await pushSync(codeOf(sub),sub.endpoint);rs.textContent=ok?'자동 등록됨 · 시간대를 바꾸면 다음 정각부터 바로 반영돼요':'등록하지 못했어요. 인터넷 연결을 확인하고 다시 열어주세요';rs.className=ok?'t-ok':'t-bad';if(!ok)$('gearBadge').hidden=false;}}
+    else{const ok=await pushSync(codeOf(sub),sub.endpoint);rs.textContent=ok?'자동 등록됨 · 매시 정각 + 시각 정한 일은 그 시각에 한 번 더 알려요':'등록하지 못했어요. 인터넷 연결을 확인하고 다시 열어주세요';rs.className=ok?'t-ok':'t-bad';if(!ok)$('gearBadge').hidden=false;}}
   S.settings.push=on;mirror();
   let lp=null;try{lp=await kvGet('lastPush');}catch(e){}
   const w=$('pushLast');$('pushLastWrap').hidden=!on;
