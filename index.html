@@ -277,6 +277,10 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     </button>
   </div>
 
+  <div class="nudge" id="pushNudge" hidden>
+    <span>잠금화면 알림이 꺼졌어요</span>
+    <button type="button" id="pushFix">다시 켜기</button>
+  </div>
   <div class="nudge" id="backupNudge" hidden>
     <span id="backupNudgeTxt">백업한 지 7일 지났어요</span>
     <button type="button" id="nudgeBackup">지금 백업</button>
@@ -292,7 +296,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">37</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">38</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -463,11 +467,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">37</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">38</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">37</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">38</span></footer>
   </div>
 </section>
 
@@ -483,7 +487,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='37';
+const VERSION='38';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -512,7 +516,7 @@ function clean(j){const o={tasks:{},days:{},settings:{},body:{height:null,log:{}
     o.days[k]={done:Array.isArray(d.done)?d.done.filter(x=>typeof x==='string').slice(0,500):[],total:numIn(d.total,0,1e4)||0,doneCount:numIn(d.doneCount,0,1e4)||0};});
   const st=j.settings&&typeof j.settings==='object'?j.settings:{};
   if(numIn(st.start,0,23)!=null)o.settings.start=Math.round(st.start);if(numIn(st.end,0,23)!=null)o.settings.end=Math.round(st.end);
-  ['sound','push','autoSrv'].forEach(k=>{if(typeof st[k]==='boolean')o.settings[k]=st[k];});
+  ['sound','push','autoSrv','wantPush'].forEach(k=>{if(typeof st[k]==='boolean')o.settings[k]=st[k];});
   if(DK.test(st.srvDay))o.settings.srvDay=st.srvDay;
   if(st.autoLog&&typeof st.autoLog==='object')o.settings.autoLog={t:numIn(st.autoLog.t,0,1e14)||0,ok:!!st.autoLog.ok,name:String(st.autoLog.name||'').slice(0,60),err:String(st.autoLog.err||'').slice(0,200)};
   if(Array.isArray(st.autoNames))o.settings.autoNames=st.autoNames.filter(x=>typeof x==='string').map(x=>x.slice(0,60)).slice(0,10);
@@ -959,6 +963,9 @@ async function refreshPush(){
   const reg=await getReg();
   let sub=reg&&await reg.pushManager.getSubscription().catch(()=>null);
   if(!sub&&lastSub)sub=lastSub;
+  // 자가 복구: 사용자가 켜 두었는데 브라우저가 구독을 지웠으면, 허용이 살아 있는 한 조용히 다시 구독
+  if(!sub&&reg&&S.settings.wantPush!==false&&(S.settings.wantPush||S.settings.push)&&Notification.permission==='granted'){
+    try{sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});lastSub=sub;S.settings.wantPush=true;toast('꺼져 있던 잠금화면 알림을 다시 켰어요');}catch(e){}}
   // 삼성 인터넷 등은 허용 상태를 늦게 알려주므로, 구독이 있고 '차단'만 아니면 켜진 것으로 본다
   let on=!!sub&&Notification.permission!=='denied';
   // 자가 복구: 알림 시간대 안에서 2시간 넘게 정각 알림을 하나도 못 받았으면 알림 주소가 끊긴 것(410)으로 보고 새 주소로 다시 등록
@@ -966,7 +973,8 @@ async function refreshPush(){
     const lp=(await kvGet('lastPush').catch(()=>null))||0;let ps={};try{ps=JSON.parse(localStorage.getItem('candoit.pushsync')||'{}');}catch(e){}
     const h=new Date().getHours(),since=Math.max(lp,ps.t0||0);
     if(since&&h>=S.settings.start+2&&h<=S.settings.end&&Date.now()-since>2*3600e3+15*60e3){window.__healed=1;
-      await sub.unsubscribe().catch(()=>{});sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});lastSub=sub;
+      await sub.unsubscribe().catch(()=>{});const opt={userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)};
+      try{sub=await reg.pushManager.subscribe(opt);}catch(e){await new Promise(r=>setTimeout(r,1500));sub=await reg.pushManager.subscribe(opt);}lastSub=sub;
       toast('알림 연결이 끊겨 있어서 새로 연결했어요');}
   }catch(e){}}
   $('pushSw').setAttribute('aria-checked',on);
@@ -975,7 +983,8 @@ async function refreshPush(){
   if(on){const rs=$('regState');
     if(!gh()){rs.textContent='서버 백업에 연결해야 잠금화면 알림이 와요 (아래 백업·복구 → 서버 백업 연결)';rs.className='t-bad';$('gearBadge').hidden=false;}
     else{const ok=await pushSync(codeOf(sub),sub.endpoint);rs.textContent=ok?'자동 등록됨 · 매시 정각 + 시각 정한 일은 그 시각에 한 번 더 알려요':'등록하지 못했어요. 인터넷 연결을 확인하고 다시 열어주세요';rs.className=ok?'t-ok':'t-bad';if(!ok)$('gearBadge').hidden=false;}}
-  S.settings.push=on;mirror();
+  S.settings.push=on;if(on&&S.settings.wantPush===undefined)S.settings.wantPush=true;mirror();
+  $('pushNudge').hidden=on||!S.settings.wantPush;
   let lp=null;try{lp=await kvGet('lastPush');}catch(e){}
   const w=$('pushLast');$('pushLastWrap').hidden=!on;
   if(on){const now=new Date(),h=now.getHours(),st=S.settings.start,en=S.settings.end;
@@ -984,6 +993,7 @@ async function refreshPush(){
       w.textContent=(late?'⚠ 최근 2시간 넘게 정각 알림이 안 왔어요 (마지막 ':'마지막 정각 알림 받음 ')+(d.getMonth()+1)+'/'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())+(late?'). cron-job.org가 멈췄을 수 있어요.':'');
       w.className=late?'t-bad':'';if(late)$('gearBadge').hidden=false;}}
 }
+$('pushFix').onclick=()=>{$('pushSw').setAttribute('aria-checked','false');$('pushSw').click();setTimeout(()=>{if($('pushSw').getAttribute('aria-checked')==='true')$('pushNudge').hidden=true;},4000);};
 $('pushSw').onclick=()=>{
   const why=pushSupport();
   if(why){pushMsg(why,true);return;}
@@ -999,12 +1009,12 @@ $('pushSw').onclick=()=>{
     const reg=await getReg();
     if(!reg){pushMsg('앱을 준비하지 못했어요. 앱을 완전히 닫았다가 다시 열고 눌러주세요.',true);return;}
     const cur=await reg.pushManager.getSubscription().catch(()=>null);
-    if(cur&&$('pushSw').getAttribute('aria-checked')==='true'){await cur.unsubscribe().catch(()=>{});lastSub=null;pushMsg('알림을 껐어요');refreshPush();return;}
+    if(cur&&$('pushSw').getAttribute('aria-checked')==='true'){await cur.unsubscribe().catch(()=>{});lastSub=null;S.settings.wantPush=false;save();pushMsg('알림을 껐어요');refreshPush();return;}
     const perm=await permP;
     if(perm!=='granted'){pushMsg('알림 허용이 필요해요. 허용 창에서 "허용"을 눌러주세요.',true);refreshPush();return;}
     try{// 이미 있는 구독은 그대로 써야 알림 코드가 바뀌지 않음
       lastSub=cur||await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});
-      pushMsg('알림을 켰어요.');}
+      S.settings.wantPush=true;save();pushMsg('알림을 켰어요.');}
     catch(e){pushMsg('알림을 켜지 못했어요: '+(e&&e.message||e)+' — 화면을 캡처해서 Claude에게 보내주세요.',true);}
     await refreshPush();
   })();
