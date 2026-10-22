@@ -1,5 +1,5 @@
 /* 할수있어 서비스워커: 홈 화면 설치 + 잠금화면 알림 */
-const CACHE='candoit-v36';
+const CACHE='candoit-v37';
 const SHELL=['./','./index.html','./manifest.webmanifest','./fonts/pretendard.woff2','./icon-192.png','./icon-512.png','./icon-180.png','./badge-96.png','./favicon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -62,6 +62,24 @@ async function showAt(hm){
 self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch(x){}
   if(d.at&&/^\d\d:\d\d$/.test(d.at)){e.waitUntil(Promise.all([showAt(d.at).catch(fallback),markPush()]));return;}
   e.waitUntil(Promise.all([show(d.h!=null?pad(d.h)+':00':null).catch(fallback),markPush()]));});
+// 브라우저가 알림 주소를 바꾸면(pushsubscriptionchange) 새 주소로 다시 구독하고 서버 백업 저장소에 바로 다시 등록
+const VAPID='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
+const kb=s=>{const b=atob((s+'='.repeat((4-s.length%4)%4)).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0));};
+const b64uS=str=>{const b=new TextEncoder().encode(str);let x='';b.forEach(c=>x+=String.fromCharCode(c));return btoa(x).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');};
+const b64S=str=>{const b=new TextEncoder().encode(str);let x='';b.forEach(c=>x+=String.fromCharCode(c));return btoa(x);};
+function kvGetSW(k){return new Promise(res=>{try{const r=indexedDB.open('candoit',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');
+  r.onsuccess=()=>{try{const g=r.result.transaction('kv').objectStore('kv').get(k);g.onsuccess=()=>res(g.result||null);g.onerror=()=>res(null);}catch(e){res(null)}};r.onerror=()=>res(null);}catch(e){res(null)}});}
+async function reRegister(newSub){
+  const sub=newSub||await self.registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:kb(VAPID)});
+  const pf=await kvGetSW('pushfile');if(!pf||!pf.token||!pf.repo||!pf.body)return;
+  const j=sub.toJSON(),code=b64uS(JSON.stringify({e:j.endpoint,k:j.keys,a:pf.body.a,b:pf.body.b}));
+  const id=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(j.endpoint)))).slice(0,8).map(x=>x.toString(16).padStart(2,'0')).join('');
+  const url='https://api.github.com/repos/'+pf.repo+'/contents/push/'+id+'.json',h={Authorization:'Bearer '+pf.token,Accept:'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'};
+  let sha=null;try{const r=await fetch(url,{headers:h});if(r.ok)sha=(await r.json()).sha;}catch(e){}
+  const body=Object.assign({},pf.body,{code,updated:new Date().toISOString(),by:'sw'});
+  await fetch(url,{method:'PUT',headers:h,body:JSON.stringify(Object.assign({message:'알림 주소 자동 갱신 '+id,content:b64S(JSON.stringify(body))},sha?{sha}:{}))});
+}
+self.addEventListener('pushsubscriptionchange',e=>{e.waitUntil(reRegister(e.newSubscription).catch(()=>{}));});
 self.addEventListener('message',e=>{if(e.data&&e.data.type==='test')e.waitUntil(show().catch(fallback));});
 self.addEventListener('notificationclick',e=>{e.notification.close();
   e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{for(const c of cs){if('focus' in c)return c.focus();}return self.clients.openWindow('./');}));});

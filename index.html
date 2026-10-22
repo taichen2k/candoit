@@ -292,7 +292,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">36</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">37</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -463,11 +463,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">36</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">37</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">36</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">37</span></footer>
   </div>
 </section>
 
@@ -483,7 +483,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='36';
+const VERSION='37';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -947,7 +947,11 @@ async function pushSync1(code,endpoint){try{
   const body={app:'할수있어',code,alarms,a:S.settings.start,b:S.settings.end,device:/Android/.test(navigator.userAgent)?'Android':/iPhone|iPad/.test(navigator.userAgent)?'iPhone':'PC',updated:new Date().toISOString()};
   await ghApi(path,{method:'PUT',body:JSON.stringify(Object.assign({message:'알림 설정 '+id,content:b64e(JSON.stringify(body))},cur&&cur.sha?{sha:cur.sha}:{}))});
   if(last.id&&last.id!==id){const old=await ghApi('/contents/push/'+last.id+'.json').catch(()=>null);if(old&&old.sha)await ghApi('/contents/push/'+last.id+'.json',{method:'DELETE',body:JSON.stringify({message:'예전 알림 설정 정리',sha:old.sha})}).catch(()=>{});}
-  localStorage.setItem(SK,JSON.stringify({id,code,ak,t:Date.now()}));return true;}catch(e){return false;}}
+  const t0=last.id===id&&last.t0?last.t0:Date.now();
+  localStorage.setItem(SK,JSON.stringify({id,code,ak,t:Date.now(),t0}));
+  // 서비스워커가 알림 주소가 바뀐 순간 스스로 다시 등록할 수 있게 저장소 정보와 마지막 내용을 넘겨 둠
+  try{const g=gh();await kvPut('pushfile',{repo:g.repo,token:g.token,body});}catch(e){}
+  return true;}catch(e){return false;}}
 async function refreshPush(){
   $('installGuide').hidden=!(isIOS&&!standalone);
   const why=pushSupport();
@@ -956,7 +960,15 @@ async function refreshPush(){
   let sub=reg&&await reg.pushManager.getSubscription().catch(()=>null);
   if(!sub&&lastSub)sub=lastSub;
   // 삼성 인터넷 등은 허용 상태를 늦게 알려주므로, 구독이 있고 '차단'만 아니면 켜진 것으로 본다
-  const on=!!sub&&Notification.permission!=='denied';
+  let on=!!sub&&Notification.permission!=='denied';
+  // 자가 복구: 알림 시간대 안에서 2시간 넘게 정각 알림을 하나도 못 받았으면 알림 주소가 끊긴 것(410)으로 보고 새 주소로 다시 등록
+  if(on&&gh()&&Notification.permission==='granted'&&!window.__healed){try{
+    const lp=(await kvGet('lastPush').catch(()=>null))||0;let ps={};try{ps=JSON.parse(localStorage.getItem('candoit.pushsync')||'{}');}catch(e){}
+    const h=new Date().getHours(),since=Math.max(lp,ps.t0||0);
+    if(since&&h>=S.settings.start+2&&h<=S.settings.end&&Date.now()-since>2*3600e3+15*60e3){window.__healed=1;
+      await sub.unsubscribe().catch(()=>{});sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});lastSub=sub;
+      toast('알림 연결이 끊겨 있어서 새로 연결했어요');}
+  }catch(e){}}
   $('pushSw').setAttribute('aria-checked',on);
   $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요');
   $('pushCodePanel').hidden=!on;
