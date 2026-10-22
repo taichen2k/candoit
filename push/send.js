@@ -77,6 +77,18 @@ async function alertIssue(fails, okCount) {
       console.log('알림이 다시 가서 안내를 닫았어요');
     }
   } catch (e) { console.log('끊김 안내를 처리하지 못했어요'); }
+  // 상태 파일 push-ok.txt: 알림이 가면 있고, 끊기면 지움 → cron-job.org가 이 주소를 확인해서 없으면(404) 네이버 메일로 알려 줌
+  try {
+    const url = 'https://api.github.com/repos/' + repo + '/contents/push-ok.txt';
+    const cur = await fetch(url, { headers: h }); const has = cur.ok ? await cur.json() : null;
+    if (dead && !okCount && has && has.sha) {
+      await fetch(url, { method: 'DELETE', headers: h, body: JSON.stringify({ message: '알림 끊김 표시', sha: has.sha }) });
+      console.log('상태 파일을 지웠어요(끊김)');
+    } else if (okCount && !has) {
+      await fetch(url, { method: 'PUT', headers: h, body: JSON.stringify({ message: '알림 정상 표시', content: Buffer.from('ok\n').toString('base64') }) });
+      console.log('상태 파일을 만들었어요(정상)');
+    }
+  } catch (e) { console.log('상태 파일을 처리하지 못했어요'); }
 }
 const sleep = ms => new Promise(r => setTimeout(r, Math.max(0, ms)));
 
