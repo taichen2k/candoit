@@ -11,6 +11,9 @@ on:
         description: '시각 맞춤 알림 시험 (예: 18:00 — 그 시각 할 일로 지금 바로 보냄)'
         type: string
         default: ''
+permissions:
+  contents: read
+  issues: write
 jobs:
   send:
     runs-on: ubuntu-latest
@@ -27,5 +30,6 @@ jobs:
           PUSH_CODES: ${{ secrets.PUSH_CODES }}
           BACKUP_READ_TOKEN: ${{ secrets.BACKUP_READ_TOKEN }}
           BACKUP_REPO: taichen2k/candoit-backup
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TEST_AT: ${{ github.event_name == 'workflow_dispatch' && inputs.test_at || '' }}
           FORCE: ${{ github.event_name == 'workflow_dispatch' && inputs.force && '1' || '0' }}

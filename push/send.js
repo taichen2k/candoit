@@ -58,6 +58,26 @@ function alarmsIn(plan, from, to) {
   return [...out].map(x => { const [t, hm] = x.split('|'); return { t: +t, hm }; });
 }
 
+// 알림이 끊기면(410/404) 깃허브 이슈를 하나 열어 이메일로 알려 줌. 다시 성공하면 저절로 닫음 (중복으로 열지 않음)
+async function alertIssue(fails, okCount) {
+  const tok = process.env.GITHUB_TOKEN, repo = process.env.GITHUB_REPOSITORY;
+  if (!tok || !repo || force || testAt) return;
+  const dead = fails.some(f => f === 404 || f === 410);
+  if (!dead && !okCount) return;
+  const h = { Authorization: 'Bearer ' + tok, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' };
+  const T = '할수있어 알림이 끊겼어요';
+  try {
+    const open = (await (await fetch('https://api.github.com/repos/' + repo + '/issues?state=open&labels=alert-push&per_page=5', { headers: h })).json()) || [];
+    if (dead && !okCount && !open.length) {
+      await fetch('https://api.github.com/repos/' + repo + '/issues', { method: 'POST', headers: h, body: JSON.stringify({ title: T, labels: ['alert-push'],
+        body: '폰의 알림 주소가 끊겨서(410) 잠금화면 알림이 가지 않고 있어요.\n\n**해결: 폰에서 할수있어를 한 번 열어 주세요.** 앱이 새 주소로 다시 연결해요. 안 되면 설정의 매시 정각 알림 스위치를 껐다 켜 주세요.\n\n알림이 다시 가면 이 글은 저절로 닫혀요.' }) });
+      console.log('알림 끊김 안내를 열었어요');
+    } else if (okCount && open.length) {
+      for (const i of open) await fetch('https://api.github.com/repos/' + repo + '/issues/' + i.number, { method: 'PATCH', headers: h, body: JSON.stringify({ state: 'closed', state_reason: 'completed' }) });
+      console.log('알림이 다시 가서 안내를 닫았어요');
+    }
+  } catch (e) { console.log('끊김 안내를 처리하지 못했어요'); }
+}
 const sleep = ms => new Promise(r => setTimeout(r, Math.max(0, ms)));
 
 (async () => {
@@ -104,5 +124,6 @@ const sleep = ms => new Promise(r => setTimeout(r, Math.max(0, ms)));
   }
   const kst = local(B, 540);
   const label = pad(kst.getUTCHours()) + ':' + pad(kst.getUTCMinutes()) + ' 구간';
+  await alertIssue(fails, sent + atSent);
   console.log('::notice title=알림 결과::' + label + ' · 자동 등록 ' + auto.length + '대' + (hourLabel ? ' · ' + hourLabel + ' 정각 ' + sent + '건' : '') + (atSent ? ' · 시각 맞춤 ' + atSent + '건' : '') + (outside ? ' · 시간대 밖 ' + outside + '대' : '') + (fails.length ? ' · 실패 ' + fails.join(',') : ''));
 })();
