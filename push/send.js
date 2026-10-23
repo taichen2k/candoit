@@ -90,6 +90,23 @@ async function alertIssue(fails, okCount) {
     }
   } catch (e) { console.log('상태 파일을 처리하지 못했어요'); }
 }
+const crypto = require('crypto');
+const hashE = e => crypto.createHash('sha256').update(e).digest('hex').slice(0, 16);
+const newDead = new Set();
+const ghH = () => ({ Authorization: 'Bearer ' + process.env.GITHUB_TOKEN, Accept: 'application/vnd.github+json', 'Content-Type': 'application/json' });
+const deadUrl = () => 'https://api.github.com/repos/' + process.env.GITHUB_REPOSITORY + '/contents/push-dead.json';
+async function loadDead() {
+  if (!process.env.GITHUB_TOKEN || !process.env.GITHUB_REPOSITORY) return { set: new Set(), sha: null };
+  try { const r = await fetch(deadUrl(), { headers: ghH() }); if (!r.ok) return { set: new Set(), sha: null };
+    const j = await r.json(); return { set: new Set(JSON.parse(Buffer.from(j.content, 'base64').toString('utf8'))), sha: j.sha }; }
+  catch (e) { return { set: new Set(), sha: null }; }
+}
+async function saveDead(dead, add) {
+  if (!add.size || !process.env.GITHUB_TOKEN) return;
+  const list = [...new Set([...dead.set, ...add])].slice(-200);
+  try { await fetch(deadUrl(), { method: 'PUT', headers: ghH(), body: JSON.stringify(Object.assign({ message: '끊긴 알림 주소 기록', content: Buffer.from(JSON.stringify(list)).toString('base64') }, dead.sha ? { sha: dead.sha } : {})) });
+    console.log('끊긴 알림 주소 ' + add.size + '개는 다음부터 건너뜀'); } catch (e) {}
+}
 const sleep = ms => new Promise(r => setTimeout(r, Math.max(0, ms)));
 
 (async () => {
@@ -97,6 +114,9 @@ const sleep = ms => new Promise(r => setTimeout(r, Math.max(0, ms)));
   const auto = await autoDevices(), byE = new Map();
   for (const c of manual) { const s = parse(c); if (s) byE.set(s.e, { s, plan: null }); }
   for (const b of auto) { const s = parse(b.code); if (s) byE.set(s.e, { s, plan: b.alarms || null }); }
+  // 이미 끊긴(410/404) 알림 주소는 다시 보내지 않음 — 지운 브라우저(예: 엣지)의 옛 등록이 계속 실패로 남지 않게
+  const dead = await loadDead();
+  for (const e of [...byE.keys()]) if (dead.set.has(hashE(e))) byE.delete(e);
   if (!byE.size) { console.log('등록된 알림 기기가 없어요. 건너뜁니다.'); return; }
 
   const now = Date.now();
@@ -114,6 +134,7 @@ const sleep = ms => new Promise(r => setTimeout(r, Math.max(0, ms)));
     catch (e) {
       // 실행 기록은 공개라서 코드·주소·응답 내용은 남기지 않고 상태 번호만 적음
       fails.push(e.statusCode || '연결 오류');
+      if (e.statusCode === 404 || e.statusCode === 410) newDead.add(hashE(s.e));
       console.log('보내기 실패(' + (e.statusCode || '연결 오류') + '): ' + (e.statusCode === 404 || e.statusCode === 410 ? '이 기기의 알림 주소가 바뀌었어요. 폰에서 할수있어를 한 번 열면 다시 등록돼요.' : '잠시 뒤 다시 시도돼요.'));
       return false;
     }
@@ -136,6 +157,7 @@ const sleep = ms => new Promise(r => setTimeout(r, Math.max(0, ms)));
   }
   const kst = local(B, 540);
   const label = pad(kst.getUTCHours()) + ':' + pad(kst.getUTCMinutes()) + ' 구간';
+  await saveDead(dead, newDead);
   await alertIssue(fails, sent + atSent);
   console.log('::notice title=알림 결과::' + label + ' · 자동 등록 ' + auto.length + '대' + (hourLabel ? ' · ' + hourLabel + ' 정각 ' + sent + '건' : '') + (atSent ? ' · 시각 맞춤 ' + atSent + '건' : '') + (outside ? ' · 시간대 밖 ' + outside + '대' : '') + (fails.length ? ' · 실패 ' + fails.join(',') : ''));
 })();
