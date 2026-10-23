@@ -146,10 +146,14 @@ const sleep = ms => new Promise(r => setTimeout(r, Math.max(0, ms)));
       const hour = local(ev.t, 540).getUTCHours(); hourLabel = hour + '시';
       for (const { s } of byE.values()) {
         const a = s.a ?? 8, b = s.b ?? 22;
+        // 같은 시각에 시각 맞춤 알림이 있으면 하나로 합쳐 보냄 (알림이 두 개로 나뉘어 하나가 묻히지 않게)
+        const same = events.find(x => x.kind === 'at' && !x.done && x.e === s.e && x.t === ev.t);
+        if (same) { same.done = true; if (await send(s, { h: hour, at: same.hm })) { sent++; atSent++; } continue; }
         if (!force && (hour < a || hour > b)) { outside++; continue; }
         if (await send(s, { h: hour })) sent++;
       }
     } else {
+      if (ev.done) continue;
       const d = byE.get(ev.e);
       if (d && await send(d.s, { at: ev.hm })) atSent++;
       console.log(ev.hm + ' 시각 맞춤 알림');

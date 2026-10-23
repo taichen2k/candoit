@@ -1,5 +1,5 @@
 /* 할수있어 서비스워커: 홈 화면 설치 + 잠금화면 알림 */
-const CACHE='candoit-v45';
+const CACHE='candoit-v46';
 const SHELL=['./','./index.html','./manifest.webmanifest','./fonts/pretendard.woff2','./icon-192.png','./icon-512.png','./icon-180.png','./badge-96.png','./favicon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -30,15 +30,15 @@ async function summary(hourLabel){
   if(!rem.length)return {title:T,body:'오늘 할 일을 모두 끝냈어요. 잘했어요!'};
   // 놓친 일(시각 지남) → 지금 할 일(시각 없음) 순서, 시각이 아직 안 된 일은 빼고 다음 일정만 알려줌
   const hm=pad(now.getHours())+':'+pad(now.getMinutes());
-  const missed=rem.filter(t=>t.time&&t.time<=hm),free=rem.filter(t=>!t.time),later=rem.filter(t=>t.time&&t.time>hm);
+  const missed=rem.filter(t=>t.time&&t.time<hm),nowT=rem.filter(t=>t.time&&t.time===hm),free=rem.filter(t=>!t.time),later=rem.filter(t=>t.time&&t.time>hm);
   // 시각은 폰이 알림 옆에 표시하므로 제목에서 빼고 한 줄로 짧게
-  const list=missed.map(t=>'놓침  '+t.time+'  '+t.title).concat(free.map(t=>'할 일  '+t.title));
+  const list=missed.map(t=>'놓침  '+t.time+'  '+t.title).concat(nowT.map(t=>'지금  '+t.time+'  '+t.title),free.map(t=>'할 일  '+t.title));
   // 앞으로 남은 시각 정한 일은 가까운 순서로 전부 보여줌
   const next=later.map(t=>'다음  '+t.time+'  '+t.title).join('\n');
   if(!list.length)return {title:T,body:'지금 할 일은 없어요.'+(next?'\n'+next:'')};
-  const n=missed.length+free.length;
+  const n=missed.length+nowT.length+free.length;
   const title=T,head2=(missed.length?'놓친 일 '+missed.length+'개 · ':'')+'할 일 '+n+'개 남았어요.';
-  const body=head2+'\n'+list.slice(0,5).join('\n')+(list.length>5?'\n외 '+(list.length-5)+'개':'')+(next?'\n'+next:'');
+  const body=head2+'\n'+list.join('\n')+(next?'\n'+next:'');
   return {title,body};
 }
 async function show(hourLabel){
@@ -57,7 +57,9 @@ async function showAt(hm){
   const all=Object.values((st&&st.tasks)||{}).filter(t=>t.time===hm&&(t.fixed?(!t.from||t.from<=k):t.date===k));
   const left=all.filter(t=>!ds.has(t.id));
   if(!left.length)return self.registration.showNotification('⏰ '+hm+' 할 일',{body:all.length?'이 시각 할 일은 이미 끝냈어요. 잘했어요!':'이 시각에 남은 할 일이 없어요.',badge:'badge-96.png',tag:'candoit-at-'+hm,silent:true,data:{url:'./'}});
-  return self.registration.showNotification('⏰ '+hm+' '+left[0].title,{body:(left.length>1?left.map(t=>'· '+t.title).join('\n')+'\n':'')+'지금 할 시간이에요.',badge:'badge-96.png',tag:'candoit-at-'+hm,renotify:true,requireInteraction:true,data:{url:'./'}});
+  // 시각 맞춤 알림에도 남은 할 일 전체 요약을 함께 보여줌
+  let rest='';try{const sm=await summary(hm);rest='\n\n'+sm.body;}catch(e){}
+  return self.registration.showNotification('⏰ '+hm+' '+left[0].title,{body:(left.length>1?left.map(t=>'· '+t.title).join('\n')+'\n':'')+'지금 할 시간이에요.'+rest,badge:'badge-96.png',tag:'candoit-at-'+hm,renotify:true,requireInteraction:true,data:{url:'./'}});
 }
 self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch(x){}
   if(d.at&&/^\d\d:\d\d$/.test(d.at)){e.waitUntil(Promise.all([showAt(d.at).catch(fallback),markPush()]));return;}
