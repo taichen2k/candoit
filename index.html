@@ -307,7 +307,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">40</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">41</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -478,11 +478,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">40</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">41</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">40</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">41</span></footer>
   </div>
 </section>
 
@@ -498,7 +498,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='40';
+const VERSION='41';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -933,7 +933,7 @@ if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(
 function b64u(buf){return btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');}
 function keyBytes(s){const p='='.repeat((4-s.length%4)%4);const b=atob((s+p).replace(/-/g,'+').replace(/_/g,'/'));return Uint8Array.from(b,c=>c.charCodeAt(0));}
 function codeOf(sub){const j=sub.toJSON();return b64u(new TextEncoder().encode(JSON.stringify({e:j.endpoint,k:j.keys,a:S.settings.start,b:S.settings.end})));}
-async function getReg(){if(swReg)return swReg;try{swReg=await Promise.race([navigator.serviceWorker.ready,new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),6000))]);}catch(e){swReg=null;}return swReg;}
+async function getReg(){if(swReg)return swReg;try{const r=await navigator.serviceWorker.getRegistration();if(r&&(r.active||r.waiting||r.installing)){swReg=r;return r;}}catch(e){}try{swReg=await Promise.race([navigator.serviceWorker.ready,new Promise((_,j)=>setTimeout(()=>j(new Error('timeout')),15000))]);}catch(e){swReg=null;}return swReg;}
 function pushSupport(){
   if(!('serviceWorker' in navigator))return '이 브라우저는 알림을 지원하지 않아요. 갤럭시는 크롬, 아이폰은 사파리로 열어주세요.';
   if(isIOS&&!standalone)return '아이폰은 홈 화면에 설치한 할수있어 아이콘으로 열어야 알림을 켤 수 있어요. 아래 설치 방법을 따라 해주세요.';
@@ -989,7 +989,7 @@ async function refreshPush(){
       toast('알림 연결이 끊겨 있어서 새로 연결했어요');}
   }catch(e){}}
   $('pushSw').setAttribute('aria-checked',on);
-  $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요');
+  $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요'+(!reg?' · 앱 준비가 덜 됐어요':Notification.permission==='default'?' · 알림 허용이 아직 안 됐어요':' · 허용은 돼 있어요'));
   $('pushCodePanel').hidden=!on;
   if(on){const rs=$('regState');
     if(!gh()){rs.textContent='서버 백업에 연결해야 잠금화면 알림이 와요 (아래 백업·복구 → 서버 백업 연결)';rs.className='t-bad';$('gearBadge').hidden=false;}
