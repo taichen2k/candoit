@@ -250,15 +250,39 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 </style>
 </head>
 <body>
-<div id="splash" aria-hidden="true" style="position:fixed;inset:0;z-index:9999;background:#3056e0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;transition:opacity .35s ease">
-  <svg viewBox="0 0 512 512" width="104" height="104"><rect width="512" height="512" rx="118" fill="#fff" opacity=".14"/><path d="M136 268 L214 346 L378 160" fill="none" stroke="#fff" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/><circle cx="404" cy="118" r="20" fill="#fff" opacity=".55"/><circle cx="434" cy="88" r="14" fill="#fff" opacity=".35"/></svg>
-  <div style="color:#fff;font-size:34px;font-weight:800;letter-spacing:-.04em">할수있어</div>
-  <div style="position:absolute;bottom:calc(48px + env(safe-area-inset-bottom,0px));color:rgba(255,255,255,.78);font-size:14px;font-weight:600">작심삼일 123번이면 1년</div>
+<style>
+#splash{position:fixed;inset:0;z-index:9999;background:#3056e0;overflow:hidden;transition:opacity .45s cubic-bezier(.4,0,.2,1)}
+#splash .sp-mid{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
+#splash .sp-ic{position:relative;width:168px;height:168px;animation:spLift 1s cubic-bezier(.22,1,.36,1) .15s both}
+#splash .sp-ic svg{position:absolute;inset:0;width:100%;height:100%}
+#splash .sp-ring{position:absolute;left:50%;top:50%;width:150px;height:150px;margin:-75px 0 0 -75px;border-radius:50%;border:2px solid rgba(255,255,255,.55);opacity:0;animation:spRing 1.3s cubic-bezier(.22,1,.36,1) .35s both}
+#splash .sp-ring.r2{animation-delay:.55s;border-color:rgba(255,255,255,.3)}
+#splash .sp-dot{transform-box:fill-box;transform-origin:center;animation:spDot 1.2s cubic-bezier(.22,1,.36,1) .3s both}
+#splash .sp-dot.d2{animation-delay:.42s}
+#splash .sp-t{margin-top:-6px;color:#fff;font-size:36px;font-weight:800;letter-spacing:.08em;opacity:0;animation:spTitle .9s cubic-bezier(.22,1,.36,1) .55s both}
+#splash .sp-s{position:absolute;left:0;right:0;bottom:calc(52px + env(safe-area-inset-bottom,0px));text-align:center;color:rgba(255,255,255,.8);font-size:13.5px;font-weight:600;letter-spacing:.12em;opacity:0;animation:spSub .8s ease .75s both}
+#splash .sp-s i{display:inline-block;width:22px;height:1px;background:rgba(255,255,255,.5);vertical-align:middle;margin:0 10px}
+@keyframes spLift{0%{transform:translateY(0) scale(1)}35%{transform:translateY(0) scale(.94)}100%{transform:translateY(-14px) scale(.78)}}
+@keyframes spRing{0%{opacity:0;transform:scale(.6)}25%{opacity:1}100%{opacity:0;transform:scale(1.9)}}
+@keyframes spDot{0%{transform:translate(0,0);opacity:1}100%{transform:translate(10px,-18px);opacity:0}}
+@keyframes spTitle{0%{opacity:0;transform:translateY(14px);letter-spacing:.3em;filter:blur(3px)}100%{opacity:1;transform:none;letter-spacing:-.03em;filter:none}}
+@keyframes spSub{0%{opacity:0;transform:translateY(6px)}100%{opacity:1;transform:none}}
+#splash.out .sp-mid{transition:transform .45s cubic-bezier(.4,0,.2,1);transform:translate(-50%,-50%) scale(1.06)}
+@media (prefers-reduced-motion:reduce){#splash *{animation-duration:.01s!important;animation-delay:0s!important}}
+</style>
+<div id="splash" aria-hidden="true">
+  <div class="sp-mid">
+    <div class="sp-ic"><span class="sp-ring"></span><span class="sp-ring r2"></span>
+      <svg viewBox="0 0 512 512"><path d="M136 268 L214 346 L378 160" fill="none" stroke="#fff" stroke-width="58" stroke-linecap="round" stroke-linejoin="round"/><circle class="sp-dot" cx="404" cy="118" r="20" fill="#fff" opacity=".55"/><circle class="sp-dot d2" cx="434" cy="88" r="14" fill="#fff" opacity=".35"/></svg>
+    </div>
+    <div class="sp-t">할수있어</div>
+  </div>
+  <div class="sp-s">작심삼일<i></i>123번이면 1년</div>
 </div>
 <script>(function(){var sp=document.getElementById('splash');var app=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;var seen=false;try{seen=sessionStorage.getItem('candoit.splash')==='1';sessionStorage.setItem('candoit.splash','1');}catch(e){}
   if(!app||seen){sp.remove();return;}
-  var t0=Date.now();window.addEventListener('load',function(){setTimeout(function(){sp.style.opacity='0';setTimeout(function(){sp.remove();},400);},Math.max(0,700-(Date.now()-t0)));});
-  setTimeout(function(){if(sp.isConnected){sp.style.opacity='0';setTimeout(function(){sp.remove();},400);}},2500);})();</script>
+  var t0=Date.now(),done=false;function hide(){if(done)return;done=true;sp.classList.add('out');sp.style.opacity='0';setTimeout(function(){sp.remove();},480);}
+  window.addEventListener('load',function(){setTimeout(hide,Math.max(0,1900-(Date.now()-t0)));});setTimeout(hide,3200);})();</script>
 
 <div class="wrap" id="main">
   <header>
@@ -316,7 +340,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">43</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">44</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -487,11 +511,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">43</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">44</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">43</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">44</span></footer>
   </div>
 </section>
 
@@ -507,7 +531,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='43';
+const VERSION='44';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
