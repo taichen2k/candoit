@@ -2,7 +2,7 @@
 const CACHE='candoit-v46';
 const SHELL=['./','./index.html','./manifest.webmanifest','./fonts/pretendard.woff2','./icon-192.png','./icon-512.png','./icon-180.png','./badge-96.png','./favicon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()));});
-self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('candoit-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 // 항상 최신 파일을 먼저 받고, 인터넷이 안 될 때만 보관본 사용
 self.addEventListener('fetch',e=>{
   const req=e.request;if(req.method!=='GET')return;
