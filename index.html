@@ -307,7 +307,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">48</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">49</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -478,11 +478,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">48</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">49</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">48</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">49</span></footer>
   </div>
 </section>
 
@@ -498,7 +498,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='48';
+const VERSION='49';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -979,19 +979,22 @@ async function refreshPush(){
     try{sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)});lastSub=sub;S.settings.wantPush=true;toast('꺼져 있던 잠금화면 알림을 다시 켰어요');}catch(e){}}
   // 삼성 인터넷 등은 허용 상태를 늦게 알려주므로, 구독이 있고 '차단'만 아니면 켜진 것으로 본다
   let on=!!sub&&Notification.permission!=='denied';
-  // 자가 복구: 알림 시간대 안에서 2시간 넘게 정각 알림을 하나도 못 받았으면 알림 주소가 끊긴 것(410)으로 보고 새 주소로 다시 등록
-  if(on&&gh()&&Notification.permission==='granted'&&!window.__healed){try{
-    const lp=(await kvGet('lastPush').catch(()=>null))||0;let ps={};try{ps=JSON.parse(localStorage.getItem('candoit.pushsync')||'{}');}catch(e){}
-    const h=new Date().getHours(),since=Math.max(lp,ps.t0||0);
-    // 서버가 410으로 끊긴 주소를 공개 목록(push-dead.json)에 적어 둠 → 내 주소가 거기 있으면 바로 새로 연결
-    let isDead=false;try{const dl=await (await fetch('push-dead.json?t='+Date.now(),{cache:'no-store'})).json();
-      const hx=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(sub.endpoint)))).map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,16);
-      isDead=Array.isArray(dl)&&dl.includes(hx);}catch(e){}
-    if(isDead||(since&&h>=S.settings.start+2&&h<=S.settings.end&&Date.now()-since>2*3600e3+15*60e3)){window.__healed=1;
+  // 자가 복구 ① 서버가 410으로 끊긴 주소를 공개 목록(push-dead.json)에 적어 둠 → 내 주소가 거기 있으면 끊긴 것
+  let isDead=false;
+  if(sub&&!window.__healed){try{const dl=await (await fetch('push-dead.json?t='+Date.now(),{cache:'no-store'})).json();
+    const hx=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',new TextEncoder().encode(sub.endpoint)))).map(x=>x.toString(16).padStart(2,'0')).join('').slice(0,16);
+    isDead=Array.isArray(dl)&&dl.includes(hx);}catch(e){}}
+  // 자가 복구 ② 알림 시간대 안에서 2시간 넘게 정각 알림을 하나도 못 받았으면 끊긴 것으로 봄
+  let stale=false;
+  if(on&&gh()&&!window.__healed){try{const lp=(await kvGet('lastPush').catch(()=>null))||0;let ps={};try{ps=JSON.parse(localStorage.getItem('candoit.pushsync')||'{}');}catch(e){}
+    const h=new Date().getHours(),since=Math.max(lp,ps.t0||0);stale=!!since&&h>=S.settings.start+2&&h<=S.settings.end&&Date.now()-since>2*3600e3+15*60e3;}catch(e){}}
+  if((isDead||stale)&&sub&&!window.__healed){window.__healed=1;
+    if(Notification.permission==='granted'){try{
       await sub.unsubscribe().catch(()=>{});const opt={userVisibleOnly:true,applicationServerKey:keyBytes(VAPID_PUBLIC)};
-      try{sub=await reg.pushManager.subscribe(opt);}catch(e){await new Promise(r=>setTimeout(r,1500));sub=await reg.pushManager.subscribe(opt);}lastSub=sub;
-      toast('알림 연결이 끊겨 있어서 새로 연결했어요');}
-  }catch(e){}}
+      try{sub=await reg.pushManager.subscribe(opt);}catch(e){await new Promise(r=>setTimeout(r,1500));sub=await reg.pushManager.subscribe(opt);}lastSub=sub;on=true;
+      toast('알림 연결이 끊겨 있어서 새로 연결했어요');}catch(e){on=false;}}
+    else if(isDead){// 허용이 풀려 있어 혼자서는 다시 못 켬 → 끊긴 구독을 지우고 '다시 켜기' 버튼을 보여 줌
+      await sub.unsubscribe().catch(()=>{});sub=null;lastSub=null;on=false;S.settings.wantPush=true;}}
   $('pushSw').setAttribute('aria-checked',on);
   $('pushState').textContent=on?pad(S.settings.start)+'시~'+pad(S.settings.end)+'시 매시 정각':(Notification.permission==='denied'?'알림이 차단돼 있어요 (눌러서 해결 방법 보기)':'꺼져 있어요'+(!reg?' · 앱 준비가 덜 됐어요':Notification.permission==='default'?' · 알림 허용이 아직 안 됐어요':' · 허용은 돼 있어요'));
   $('pushCodePanel').hidden=!on;
