@@ -307,7 +307,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
   </div>
 
   <div class="viewnote" id="viewNote" hidden></div>
-  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">46</span></footer>
+  <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">47</span></footer>
 </div>
 
 <div class="bar" id="bar">
@@ -478,11 +478,11 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
     <div class="group">
       <h3>앱 정보</h3>
       <div class="card">
-        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">46</span></span></div>
+        <div class="item"><div class="lbl">버전</div><span>v<span class="ver">47</span></span></div>
         <div class="item"><div class="lbl">저장 위치<small>기록은 이 기기 안에만 저장돼요</small></div></div>
       </div>
     </div>
-    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">46</span></footer>
+    <footer>© 2026 티제이컴퍼니. All rights reserved. · v<span class="ver">47</span></footer>
   </div>
 </section>
 
@@ -498,7 +498,7 @@ footer{text-align:center;font-size:12px;color:var(--muted);padding-top:8px}
 
 <script>
 (function(){
-const VERSION='46';
+const VERSION='47';
 const VAPID_PUBLIC='BGxKcpJe7sxd7D26LaaiNWJqxqziBnxMb_9GyH5UHJlgHYFBX4-ukOOUQ3s08PWZVT2Ldz8UY85QHK9ISBQGgto';
 const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
@@ -1100,6 +1100,32 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 load();rollover();syncToday();save();autoBackup();
 try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist();}catch(e){}
 if(location.hash==='#settings')openSettings();
+
+/* ---------- 뒤로가기: 열린 화면부터 하나씩 닫고, 첫 화면에서는 한 번 더 눌러야 앱이 닫힘 ---------- */
+(function(){
+  let armed=0,ready=false;
+  function closeTop(){
+    if(!$('pop').hidden){$('popClose').click();return true;}
+    if(!$('pwAsk').hidden){$('pwAskNo').click();return true;}
+    if(!$('histView').hidden){closeHist();return true;}
+    if(!$('bodyView').hidden){closeBody();return true;}
+    if(!$('settings').hidden){closeSettings();return true;}
+    if(editId||openId){editId=null;openId=null;render();return true;}
+    if(view&&view!==today){view=null;render();window.scrollTo(0,0);return true;}
+    return false;
+  }
+  function guard(){try{history.pushState({cd:1},'');}catch(e){}}
+  // 크롬은 사용자가 화면을 한 번 만진 뒤에 만든 기록만 뒤로가기에 쓰므로, 첫 터치 때 준비
+  function arm(){if(ready)return;ready=true;try{history.replaceState({cd:0},'');}catch(e){}guard();}
+  addEventListener('pointerdown',arm,{once:true,capture:true});
+  addEventListener('keydown',arm,{once:true,capture:true});
+  addEventListener('popstate',function(){
+    if(!ready)return;
+    if(closeTop()){guard();return;}
+    if(Date.now()-armed<2000){ready=false;history.back();return;}
+    armed=Date.now();toast('한 번 더 누르면 앱이 닫혀요');guard();
+  });
+})();
 })();
 </script>
 </body>
