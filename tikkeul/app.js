@@ -45,7 +45,7 @@ async function hashPin(pin,salt){const txt=salt+':'+pin;try{const b=await crypto
 function padHtml(){return `<div class="pad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-act="pinKey" data-k="${n}">${n}</button>`).join('')}<span></span><button data-act="pinKey" data-k="0">0</button><button data-act="pinKey" data-k="back" aria-label="지우기">⌫</button></div>`;}
 function dotsHtml(n,bad){return `<div class="pdots ${bad?'bad':''}">${[0,1,2,3].map(i=>`<i class="${i<n?'f':''}"></i>`).join('')}</div>`;}
 function renderLock(){const r=$('#lockRoot');if(!(S.locked&&S.settings.pin)){r.innerHTML='';return;}
-  r.innerHTML=`<div class="lock" role="dialog" aria-label="비밀번호 입력"><h2>티끌모아</h2><div>비밀번호 4자리를 입력하세요</div>${dotsHtml(S.pinIn.length,!!S.pinErr)}<div class="perr">${esc(S.pinErr)}</div>${padHtml()}</div>`;}
+  r.innerHTML=`<div class="lock" role="dialog" aria-label="비밀번호 입력"><img src="logo-mark.svg" alt="" width="72" height="72" style="border-radius:18px;box-shadow:0 4px 14px rgba(0,0,0,.18)"><h2>티끌모아</h2><div>비밀번호 4자리를 입력하세요</div>${dotsHtml(S.pinIn.length,!!S.pinErr)}<div class="perr">${esc(S.pinErr)}</div>${padHtml()}</div>`;}
 const dot2=s=>s.slice(2).replace(/-/g,'.');
 const newId=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
 const uniq=a=>[...new Set(a)];
@@ -73,6 +73,11 @@ function dbErr(e){const c=e&&e.code;if(c==='quota_exceeded')return '저장 공�
    비공개 저장소(예: taichen2k/candoit-backup)의 tikkeul/ 폴더에 파일로 저장해요.
    ledger.json(설정) · tx_YYYY-MM.json(월별 내역) · memo.json(월 메모)
    각 기록에 수정 시각(_u)을 붙여, 두 폰이 동시에 고쳐도 최신 것으로 합쳐요. 토큰은 이 기기에만 저장돼요. */
+let deferredInstall=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;try{render();}catch(x){}});
+window.addEventListener('appinstalled',()=>{deferredInstall=null;try{toast('홈 화면에 설치했어요');render();}catch(x){}});
+const isStandalone=()=>(window.matchMedia&&matchMedia('(display-mode: standalone)').matches)||navigator.standalone===true;
+const isIOS=()=>/iPhone|iPad|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
 const GH_KEY='tikkeul.gh';
 function ghCfg(){try{const j=JSON.parse(localStorage.getItem(GH_KEY)||'null');if(j&&j.repo&&j.token)return j;}catch(e){}return null;}
 function ghSave(v){try{v?localStorage.setItem(GH_KEY,JSON.stringify(v)):localStorage.removeItem(GH_KEY);}catch(e){}}
@@ -194,7 +199,7 @@ function renderTop(){const top=$('#top');const sc=!S.db?'off':GH.err?'off':S.db.
       <div class="hic"><span class="sync ${sc}" title="${st}"><i></i></span><button data-act="open" data-k="sms" aria-label="문자 붙여넣기">${HICON.sms}</button><button data-act="open" data-k="favorites" aria-label="자주 쓰는 내역">${HICON.fav}</button><button data-act="open" data-k="search" aria-label="검색">${HICON.search}</button><button data-act="open" data-k="filter" aria-label="필터" class="${filterOn()?'fact':''}">${HICON.set}</button></div></div>
     <div class="subtabs">${SUBS.map(([k,n])=>`<button data-act="sub" data-k="${k}" class="${S.sub===k?'on':''}">${n}</button>`).join('')}</div>${sumRow(t)}`;
     top.innerHTML=h;return;}
-  h=`<div class="brand"><h1>티끌모아</h1><span class="sync ${sc}"><i></i>${st}</span></div>`;
+  h=`<div class="brand"><h1><img src="logo-mark.svg" alt="" width="28" height="28">티끌모아</h1><span class="sync ${sc}"><i></i>${st}</span></div>`;
   if(S.tab==='stat'){const sp=statPeriod();const t=totals(txIn(sp));const modes=[['week','주간'],['month','월간'],['year','연간'],['range','기간']];
     let lab;if(S.sp==='month'){const [y,m]=S.label.split('-');lab=`<b>${y}년 ${+m}월</b>`;}else if(S.sp==='year')lab=`<b>${S.spYear||S.label.slice(0,4)}년</b>`;
     else if(S.sp==='week')lab=`<b class="num" style="font-size:19px">${dot2(sp.start)} ~ ${dot2(sp.last)}</b>`;
@@ -325,7 +330,7 @@ function assetHtml(){const ms=allMonths();const pending=ms.some(ym=>!S.live[ym]&
   return h;}
 
 function moreHtml(){const st=S.settings;const bt=st.budget&&st.budget.total;
-  return `<div class="menu">
+  return `${isStandalone()?'':`<div class="card inst"><img src="logo-mark.svg" alt="" width="56" height="56"><div><b>티끌모아를 앱으로 설치</b><span class="muted">홈 화면 아이콘으로 바로 열려요</span></div><button class="btn pri" data-act="install">설치</button></div>`}<div class="menu">
   <button data-act="open" data-k="search"><span>내역 검색</span><small>›</small></button>
   <button data-act="open" data-k="sms"><span>카드 문자 붙여넣기</span><small>여러 건 한 번에</small></button></div>
   <div class="menu">
@@ -476,6 +481,10 @@ const SHEETS={
   ${st.pin?`<div class="f"><label for="lockMin">다시 잠그기</label><select class="in-t" id="lockMin">${[[0,'화면을 벗어나면 바로'],[1,'1분 뒤'],[5,'5분 뒤'],[30,'30분 뒤']].map(([v,n])=>`<option value="${v}" ${(st.lockMin??1)===v?'selected':''}>${n}</option>`).join('')}</select></div>
   <div class="acts"><button class="btn danger" data-act="pinOff">잠금 끄기</button><button class="btn" data-act="pinStart">비밀번호 바꾸기</button></div>`:
   `<div class="acts"><button class="btn pri" data-act="pinStart">비밀번호 설정</button></div>`}`;},
+ install(){const ios=isIOS();return head('앱으로 설치')+`<div style="text-align:center;margin:4px 0 14px"><img src="logo.png" alt="티끌모아" style="width:100%;max-width:320px;border-radius:12px"></div>
+  ${ios?`<ol class="steps"><li><b>사파리</b>로 이 주소를 열어주세요.</li><li>아래쪽 <b>공유 버튼</b>(네모에 화살표)을 누르세요.</li><li><b>홈 화면에 추가</b>를 누르고 <b>추가</b>를 누르면 끝이에요.</li></ol>`:
+  `<ol class="steps"><li><b>크롬</b>이나 <b>삼성 인터넷</b>으로 이 주소를 열어주세요.</li><li>오른쪽 위(삼성 인터넷은 아래) <b>메뉴 ⋮ / ≡</b>를 누르세요.</li><li><b>앱 설치</b> 또는 <b>홈 화면에 추가</b>를 누르면 끝이에요.</li></ol>`}
+  <p class="muted">설치하면 주소창 없이 앱처럼 열리고, 폰마다 처음 한 번만 동기화 연결을 하면 돼요.</p>`;},
  sync(){const c=ghCfg()||{};const t=GH.lastOk?new Date(GH.lastOk):null;return head('동기화 연결')+`<div class="kv num"><div><span>저장소</span><b>${esc(c.repo||'-')}</b></div><div><span>폴더</span><b>${esc(c.dir||'tikkeul')}</b></div>
   <div><span>상태</span><b class="${GH.err?'exp':''}">${GH.err?'끊김':S.db&&S.db.pending()?'보내는 중':'정상'}</b></div><div><span>마지막 확인</span><b>${t?pad(t.getHours())+':'+pad(t.getMinutes())+':'+pad(t.getSeconds()):'-'}</b></div></div>
   ${GH.err?`<div class="err">${esc(GH.err)}</div>`:''}<p class="muted">폰들은 20초마다, 그리고 앱을 다시 열 때마다 서로 맞춰요. 인터넷이 끊겨도 이 폰에 먼저 저장하고, 연결되면 보내요.</p>
@@ -577,6 +586,7 @@ const ACT={
  async ghUseCandoit(){const c=candoitCfg();if(!c)return;S.setupBusy=true;render();try{await ghTest(c.repo,c.token);ghSave({repo:c.repo,token:c.token,dir:'tikkeul'});S.setupBusy=false;startDb(ghCfg());toast('연결했어요');}catch(e){S.setupBusy=false;S.setupErr=e.message;render();}},
  ghSyncNow(){if(S.db){S.db.syncAll();toast('동기화하는 중이에요');}},
  ghOff(el){if(!S.ghOffAsk){S.ghOffAsk=true;renderSheet();return;}S.ghOffAsk=false;ghSave(null);try{Object.keys(localStorage).filter(k=>k.startsWith('tk.f.')).forEach(k=>localStorage.removeItem(k));}catch(e){}location.reload();},
+ async install(){if(deferredInstall){const e=deferredInstall;deferredInstall=null;try{e.prompt();await e.userChoice;}catch(x){}render();return;}openSheet('install');},
  fTab(el){S.fTab=el.dataset.k;renderSheet();},
  fReset(){S.filter={inc:[],exp:[],acc:[]};render();if(S.sheet==='filter')renderSheet();},
  favEditT(){S.favEdit=!S.favEdit;renderSheet();},
@@ -691,7 +701,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){S.hiddenAt
   if(S.settings.pin&&!S.locked&&S.hiddenAt&&Date.now()-S.hiddenAt>=(S.settings.lockMin??1)*60000){S.locked=true;S.pinIn='';S.pinErr='';closeSheet();renderLock();}});
 /* ---------- boot ---------- */
 S.label=curLabel();render();
-function setupHtml(){const c=candoitCfg();return `<div class="card setup"><h3>깃허브 동기화 연결</h3>
+function setupHtml(){const c=candoitCfg();return `<div class="setup-logo"><img src="logo.png" alt="티끌모아"></div><div class="card setup"><h3>깃허브 동기화 연결</h3>
   <p class="muted">가계부는 내 깃허브 <b>비공개 저장소</b>의 tikkeul 폴더에 저장돼요. 폰마다 한 번만 연결하면 여러 폰에서 같은 장부를 써요. 토큰은 이 기기에만 저장돼요.</p>
   ${c?`<button class="btn pri wide2" data-act="ghUseCandoit">할수있어 연결 정보로 시작 (${esc(c.repo)})</button><p class="muted" style="text-align:center;margin:10px 0">또는 직접 입력</p>`:''}
   <div class="f"><label for="gh-repo">저장소 (아이디/저장소)</label><input class="in-t" id="gh-repo" value="${esc((c&&c.repo)||'taichen2k/candoit-backup')}" autocomplete="off" autocapitalize="off" spellcheck="false"></div>
