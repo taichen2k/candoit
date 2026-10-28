@@ -1,5 +1,5 @@
 /* 할수있어 서비스워커: 홈 화면 설치 + 잠금화면 알림 */
-const CACHE='candoit-v49';
+const CACHE='candoit-v50';
 const SHELL=['./','./index.html','./manifest.webmanifest','./fonts/pretendard.woff2','./icon-192.png','./icon-512.png','./icon-180.png','./badge-96.png','./favicon.svg'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(SHELL)).catch(()=>{}).then(()=>self.skipWaiting()));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k.startsWith('candoit-')&&k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
@@ -84,4 +84,6 @@ async function reRegister(newSub){
 self.addEventListener('pushsubscriptionchange',e=>{e.waitUntil(reRegister(e.newSubscription).catch(()=>{}));});
 self.addEventListener('message',e=>{if(e.data&&e.data.type==='test')e.waitUntil(show().catch(fallback));});
 self.addEventListener('notificationclick',e=>{e.notification.close();
-  e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{for(const c of cs){if('focus' in c)return c.focus();}return self.clients.openWindow('./');}));});
+  // 같은 주소(taichen2k.github.io)의 다른 앱(가계부 등) 창이 아니라 할수있어 창만 골라서 띄움
+  const scope=self.registration.scope;
+  e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{for(const c of cs){if(c.url&&c.url.startsWith(scope)&&'focus' in c)return c.focus();}return self.clients.openWindow(scope);}));});
